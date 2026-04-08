@@ -1,26 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { ModeSelector } from '../../shared/ui/ModeSelector';
 import { Screen } from '../../shared/ui/Screen';
+import { TranslationPreviewBlock } from '../../shared/ui/TranslationPreviewBlock';
 import { colors } from '../../theme/colors';
 import { uiConstants } from '../../utils/constants';
+import { previewContentByMode } from '../../utils/previewContent';
 import { texts } from '../../utils/texts';
-
+import { TranslationMode } from '../../utils/translationModes';
 const { recordButtonSize } = uiConstants.homeScreen;
 
 export function HomeScreen() {
+  const [selectedMode, setSelectedMode] = useState<TranslationMode>('ruToEn');
+
+  const previewContent = previewContentByMode[selectedMode];
+
   return (
     <Screen>
       <View style={styles.header}>
         <Text style={styles.title}>{texts.app.name}</Text>
         <Text style={styles.subtitle}>{texts.app.subtitle}</Text>
       </View>
-
-      <View style={styles.modeCard}>
-        <Text style={styles.modeLabel}>{texts.home.modeLabel}</Text>
-        <Text style={styles.modeValue}>{texts.home.modeValue}</Text>
-      </View>
-
+      <ModeSelector
+        selectedMode={selectedMode}
+        onSelectMode={setSelectedMode}
+      />
       <View style={styles.center}>
         <Pressable
           style={({ pressed }) => [
@@ -33,11 +38,19 @@ export function HomeScreen() {
 
         <Text style={styles.hint}>{texts.home.hint}</Text>
       </View>
-
       <View style={styles.resultCard}>
         <Text style={styles.resultLabel}>{texts.home.previewLabel}</Text>
-        <Text style={styles.resultSource}>{texts.home.previewSource}</Text>
-        <Text style={styles.resultTarget}>{texts.home.previewTarget}</Text>
+        <Text style={styles.resultSource}>{previewContent.source}</Text>
+
+        <TranslationPreviewBlock
+          label={texts.home.previewEnglishLabel}
+          value={previewContent.targetEn}
+        />
+
+        <TranslationPreviewBlock
+          label={texts.home.previewHebrewLabel}
+          value={previewContent.targetHe}
+        />
       </View>
     </Screen>
   );
@@ -55,26 +68,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: colors.textSecondary,
-  },
-  modeCard: {
-    marginTop: 24,
-    alignSelf: 'flex-start',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  modeLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginBottom: 4,
-  },
-  modeValue: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.textPrimary,
   },
   center: {
     flex: 1,
@@ -120,7 +113,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: 20,
     padding: 16,
-    gap: 10,
+    gap: 12,
   },
   resultLabel: {
     fontSize: 12,
@@ -130,6 +123,15 @@ const styles = StyleSheet.create({
   resultSource: {
     fontSize: 16,
     color: colors.textSecondary,
+  },
+  translationBlock: {
+    gap: 4,
+  },
+  translationLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.accent,
+    textTransform: 'uppercase',
   },
   resultTarget: {
     fontSize: 20,
