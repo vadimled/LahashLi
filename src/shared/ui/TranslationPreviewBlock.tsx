@@ -1,16 +1,18 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { I18nManager, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '../../theme/colors';
 
 type TranslationPreviewBlockProps = {
   label: string;
   value?: string;
+  isRtl?: boolean;
 };
 
 export function TranslationPreviewBlock({
   label,
   value,
+  isRtl = false,
 }: TranslationPreviewBlockProps) {
   if (!value) {
     return null;
@@ -19,7 +21,14 @@ export function TranslationPreviewBlock({
   return (
     <View style={styles.translationBlock}>
       <Text style={styles.translationLabel}>{label}</Text>
-      <Text style={styles.resultTarget}>{value}</Text>
+      <Text
+        style={[
+          styles.resultTarget,
+          isRtl ? styles.resultTargetRtl : styles.resultTargetLtr,
+        ]}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
@@ -38,5 +47,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: colors.textPrimary,
+  },
+  resultTargetLtr: {
+    writingDirection: 'ltr',
+    textAlign: 'left',
+  },
+  resultTargetRtl: {
+    writingDirection: I18nManager.isRTL ? 'rtl' : 'rtl',
+    textAlign: 'right',
   },
 });

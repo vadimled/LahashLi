@@ -50,6 +50,7 @@ export function HomeScreen() {
         <TranslationPreviewBlock
           label={texts.home.previewHebrewLabel}
           value={previewContent.targetHe}
+          isRtl
         />
       </View>
     </Screen>
