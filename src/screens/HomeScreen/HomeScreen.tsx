@@ -1,20 +1,48 @@
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { ModeSelector } from '../../shared/ui/ModeSelector';
+import { RecordButton } from '../../shared/ui/RecordButton';
 import { Screen } from '../../shared/ui/Screen';
 import { TranslationPreviewBlock } from '../../shared/ui/TranslationPreviewBlock';
 import { colors } from '../../theme/colors';
-import { uiConstants } from '../../utils/constants';
 import { previewContentByMode } from '../../utils/previewContent';
+import { RecordButtonStatus } from '../../utils/recordButton';
 import { texts } from '../../utils/texts';
 import { TranslationMode } from '../../utils/translationModes';
-const { recordButtonSize } = uiConstants.homeScreen;
 
 export function HomeScreen() {
   const [selectedMode, setSelectedMode] = useState<TranslationMode>('ruToEn');
+  const [recordButtonStatus, setRecordButtonStatus] =
+    useState<RecordButtonStatus>('idle');
 
   const previewContent = previewContentByMode[selectedMode];
+
+  useEffect(() => {
+    if (recordButtonStatus !== 'processing') {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setRecordButtonStatus('idle');
+    }, 1500);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [recordButtonStatus]);
+
+  const handleRecordButtonPress = () => {
+    if (recordButtonStatus === 'idle') {
+      setRecordButtonStatus('listening');
+      return;
+    }
+
+    if (recordButtonStatus === 'listening') {
+      setRecordButtonStatus('processing');
+      return;
+    }
+  };
 
   return (
     <Screen>
@@ -22,22 +50,21 @@ export function HomeScreen() {
         <Text style={styles.title}>{texts.app.name}</Text>
         <Text style={styles.subtitle}>{texts.app.subtitle}</Text>
       </View>
+
       <ModeSelector
         selectedMode={selectedMode}
         onSelectMode={setSelectedMode}
       />
+
       <View style={styles.center}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.recordButton,
-            pressed && styles.recordButtonPressed,
-          ]}
-        >
-          <Text style={styles.recordButtonText}>{texts.home.speakButton}</Text>
-        </Pressable>
+        <RecordButton
+          status={recordButtonStatus}
+          onPress={handleRecordButtonPress}
+        />
 
         <Text style={styles.hint}>{texts.home.hint}</Text>
       </View>
+
       <View style={styles.resultCard}>
         <Text style={styles.resultLabel}>{texts.home.previewLabel}</Text>
         <Text style={styles.resultSource}>{previewContent.source}</Text>
@@ -75,31 +102,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  recordButton: {
-    width: recordButtonSize,
-    height: recordButtonSize,
-    borderRadius: recordButtonSize / 2,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOpacity: 0.3,
-    shadowRadius: 18,
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    elevation: 8,
-  },
-  recordButtonPressed: {
-    backgroundColor: colors.primaryPressed,
-    transform: [{ scale: 0.98 }],
-  },
-  recordButtonText: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
   hint: {
     marginTop: 20,
     fontSize: 15,
@@ -124,19 +126,5 @@ const styles = StyleSheet.create({
   resultSource: {
     fontSize: 16,
     color: colors.textSecondary,
-  },
-  translationBlock: {
-    gap: 4,
-  },
-  translationLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.accent,
-    textTransform: 'uppercase',
-  },
-  resultTarget: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.textPrimary,
   },
 });
