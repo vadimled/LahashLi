@@ -1,48 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useRecordButtonState } from '../../shared/hooks/useRecordButtonState';
+import { useTranslationMode } from '../../shared/hooks/useTranslationMode';
 import { ModeSelector } from '../../shared/ui/ModeSelector';
 import { RecordButton } from '../../shared/ui/RecordButton';
 import { Screen } from '../../shared/ui/Screen';
 import { TranslationPreviewBlock } from '../../shared/ui/TranslationPreviewBlock';
 import { colors } from '../../theme/colors';
 import { previewContentByMode } from '../../utils/previewContent';
-import { RecordButtonStatus } from '../../utils/recordButton';
 import { texts } from '../../utils/texts';
-import { TranslationMode } from '../../utils/translationModes';
 
 export function HomeScreen() {
-  const [selectedMode, setSelectedMode] = useState<TranslationMode>('ruToEn');
-  const [recordButtonStatus, setRecordButtonStatus] =
-    useState<RecordButtonStatus>('idle');
+  const { selectedMode, setSelectedMode } = useTranslationMode();
+  const { recordButtonStatus, handleRecordButtonPress } = useRecordButtonState();
 
   const previewContent = previewContentByMode[selectedMode];
-
-  useEffect(() => {
-    if (recordButtonStatus !== 'processing') {
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      setRecordButtonStatus('idle');
-    }, 1500);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [recordButtonStatus]);
-
-  const handleRecordButtonPress = () => {
-    if (recordButtonStatus === 'idle') {
-      setRecordButtonStatus('listening');
-      return;
-    }
-
-    if (recordButtonStatus === 'listening') {
-      setRecordButtonStatus('processing');
-      return;
-    }
-  };
 
   return (
     <Screen>
@@ -51,16 +24,10 @@ export function HomeScreen() {
         <Text style={styles.subtitle}>{texts.app.subtitle}</Text>
       </View>
 
-      <ModeSelector
-        selectedMode={selectedMode}
-        onSelectMode={setSelectedMode}
-      />
+      <ModeSelector selectedMode={selectedMode} onSelectMode={setSelectedMode} />
 
       <View style={styles.center}>
-        <RecordButton
-          status={recordButtonStatus}
-          onPress={handleRecordButtonPress}
-        />
+        <RecordButton status={recordButtonStatus} onPress={handleRecordButtonPress} />
 
         <Text style={styles.hint}>{texts.home.hint}</Text>
       </View>
