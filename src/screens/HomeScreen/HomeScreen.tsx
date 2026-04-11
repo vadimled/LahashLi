@@ -17,6 +17,10 @@ export function HomeScreen(): React.JSX.Element {
 
   const isProcessing = recordButtonStatus === 'processing';
   const isListening = recordButtonStatus === 'listening';
+  const isIdle = recordButtonStatus === 'idle';
+
+  const shouldShowEnglish = selectedMode === 'ruToEn' || selectedMode === 'ruToEnHe';
+  const shouldShowHebrew = selectedMode === 'ruToHe' || selectedMode === 'ruToEnHe';
 
   const basePreviewContent = previewContentByMode[selectedMode];
 
@@ -55,25 +59,25 @@ export function HomeScreen(): React.JSX.Element {
 
       <View style={styles.resultCard}>
         <Text style={styles.resultLabel}>{texts.home.previewLabel}</Text>
-        <Text
-          style={[
-            styles.resultSource,
-            recordButtonStatus !== 'idle' && styles.resultSourcePlaceholder,
-          ]}
-        >
+
+        <Text style={[styles.resultSource, !isIdle && styles.resultSourcePlaceholder]}>
           {previewContent.source}
         </Text>
 
-        <TranslationPreviewBlock
-          label={texts.home.previewEnglishLabel}
-          value={previewContent.targetEn}
-        />
+        {shouldShowEnglish ? (
+          <TranslationPreviewBlock
+            label={texts.home.previewEnglishLabel}
+            value={previewContent.targetEn}
+          />
+        ) : null}
 
-        <TranslationPreviewBlock
-          label={texts.home.previewHebrewLabel}
-          value={previewContent.targetHe}
-          isRtl
-        />
+        {shouldShowHebrew ? (
+          <TranslationPreviewBlock
+            label={texts.home.previewHebrewLabel}
+            value={previewContent.targetHe}
+            isRtl
+          />
+        ) : null}
       </View>
     </Screen>
   );

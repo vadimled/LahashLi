@@ -28,7 +28,7 @@ export const texts = {
       processing: {
         source: 'Preparing your translation...',
         targetEn: 'Generating English reply...',
-        targetHe: 'Generating Hebrew reply...',
+        targetHe: 'מייצר תשובה בעברית...',
       },
     },
   },
