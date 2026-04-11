@@ -14,13 +14,17 @@ export const texts = {
         processing: 'Processing...',
       },
       hint: {
-        idle: 'Tap, say the phrase in Russian, get the reply.',
-        listening: 'Say your phrase in Russian',
+        idle: 'Tap to start a new phrase.',
+        listening: 'Say your phrase in Russian, then tap again.',
         processing: 'Preparing translation...',
       },
     },
     previewState: {
       ruToEn: {
+        idle: {
+          source: 'Your Russian phrase will appear here.',
+          targetEn: 'English translation will appear here.',
+        },
         listening: {
           source: 'Listening for your Russian phrase...',
           targetEn: 'English translation will appear here.',
@@ -31,6 +35,10 @@ export const texts = {
         },
       },
       ruToHe: {
+        idle: {
+          source: 'Your Russian phrase will appear here.',
+          targetHe: 'התרגום לעברית יופיע כאן.',
+        },
         listening: {
           source: 'Listening for your Russian phrase...',
           targetHe: 'התרגום לעברית יופיע כאן.',
@@ -41,6 +49,11 @@ export const texts = {
         },
       },
       ruToEnHe: {
+        idle: {
+          source: 'Your Russian phrase will appear here.',
+          targetEn: 'English translation will appear here.',
+          targetHe: 'התרגום לעברית יופיע כאן.',
+        },
         listening: {
           source: 'Listening for your Russian phrase...',
           targetEn: 'English translation will appear here.',

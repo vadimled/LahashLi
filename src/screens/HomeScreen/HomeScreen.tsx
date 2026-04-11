@@ -1,7 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
-import { useRecordButtonState } from '../../shared/hooks/useRecordButtonState';
+import { useVoiceFlow } from '../../shared/hooks/useVoiceFlow';
 import { useTranslationMode } from '../../shared/hooks/useTranslationMode';
 import { ModeSelector } from '../../shared/ui/ModeSelector';
 import { RecordButton } from '../../shared/ui/RecordButton';
@@ -13,10 +13,17 @@ import { texts } from '../../utils/texts';
 
 export function HomeScreen(): React.JSX.Element {
   const { selectedMode, setSelectedMode } = useTranslationMode();
-  const { recordButtonStatus, handleRecordButtonPress } = useRecordButtonState();
+  const { recordButtonStatus, transcript, translationEn, translationHe, handleRecordButtonPress } =
+    useVoiceFlow(selectedMode);
 
-  const { previewContent, shouldShowEnglish, shouldShowHebrew, isIdle, isProcessing } =
-    getHomeScreenPreviewState(selectedMode, recordButtonStatus);
+  const { previewContent, shouldShowEnglish, shouldShowHebrew, isProcessing, hasResolvedContent } =
+    getHomeScreenPreviewState({
+      selectedMode,
+      recordButtonStatus,
+      transcript,
+      translationEn,
+      translationHe,
+    });
 
   return (
     <Screen>
@@ -42,7 +49,7 @@ export function HomeScreen(): React.JSX.Element {
       <View style={styles.resultCard}>
         <Text style={styles.resultLabel}>{texts.home.previewLabel}</Text>
 
-        <Text style={[styles.resultSource, !isIdle && styles.resultSourcePlaceholder]}>
+        <Text style={[styles.resultSource, !hasResolvedContent && styles.resultSourcePlaceholder]}>
           {previewContent.source}
         </Text>
 
