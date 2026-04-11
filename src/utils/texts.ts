@@ -23,7 +23,7 @@ export const texts = {
       listening: {
         source: 'Listening for your Russian phrase...',
         targetEn: 'English translation will appear here.',
-        targetHe: 'Hebrew translation will appear here.',
+        targetHe: 'התרגום לעברית יופיע כאן.',
       },
       processing: {
         source: 'Preparing your translation...',
