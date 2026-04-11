@@ -18,6 +18,12 @@ export const texts = {
         listening: 'Say your phrase in Russian, then tap again.',
         processing: 'Preparing translation...',
       },
+      error: {
+        microphoneDenied: 'Microphone access is required to start voice input.',
+        microphoneBlocked: 'Microphone access is blocked. Enable it in iPhone Settings.',
+        microphoneUnavailable: 'Microphone access is unavailable on this device.',
+        generic: 'Something went wrong while starting voice input.',
+      },
     },
     previewState: {
       ruToEn: {

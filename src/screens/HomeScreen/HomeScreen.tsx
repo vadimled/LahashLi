@@ -13,8 +13,14 @@ import { texts } from '../../utils/texts';
 
 export function HomeScreen(): React.JSX.Element {
   const { selectedMode, setSelectedMode } = useTranslationMode();
-  const { recordButtonStatus, transcript, translationEn, translationHe, handleRecordButtonPress } =
-    useVoiceFlow(selectedMode);
+  const {
+    recordButtonStatus,
+    transcript,
+    translationEn,
+    translationHe,
+    errorMessage,
+    handleRecordButtonPress,
+  } = useVoiceFlow(selectedMode);
 
   const { previewContent, shouldShowEnglish, shouldShowHebrew, isProcessing, hasResolvedContent } =
     getHomeScreenPreviewState({
@@ -44,6 +50,8 @@ export function HomeScreen(): React.JSX.Element {
 
           <Text style={styles.hint}>{texts.home.recordButton.hint[recordButtonStatus]}</Text>
         </View>
+
+        {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
       </View>
 
       <View style={styles.resultCard}>
@@ -107,6 +115,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: colors.textSecondary,
     flexShrink: 1,
+  },
+  errorText: {
+    marginTop: 12,
+    paddingHorizontal: 24,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    color: colors.danger,
   },
   resultCard: {
     backgroundColor: colors.surface,

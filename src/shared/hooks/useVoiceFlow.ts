@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { previewContentByMode } from '../../utils/previewContent';
 import { RecordButtonStatus } from '../../utils/recordButton';
+import { requestMicrophonePermission } from '../../utils/microphonePermission';
+import { texts } from '../../utils/texts';
 import { TranslationMode } from '../../utils/translationModes';
 
 type VoiceFlowState = {
@@ -38,20 +40,66 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
     };
   }, []);
 
-  const handleRecordButtonPress = useCallback(() => {
+  const handleRecordButtonPress = useCallback(async () => {
     if (voiceFlowState.status === 'processing') {
       return;
     }
 
     if (voiceFlowState.status === 'idle') {
-      setVoiceFlowState({
-        status: 'listening',
-      });
+      try {
+        const permissionResult = await requestMicrophonePermission();
+
+        if (permissionResult === 'granted') {
+          setVoiceFlowState(currentState => ({
+            ...currentState,
+            status: 'listening',
+            errorMessage: undefined,
+          }));
+
+          return;
+        }
+
+        if (permissionResult === 'blocked') {
+          setVoiceFlowState(currentState => ({
+            ...currentState,
+            status: 'idle',
+            errorMessage: texts.home.recordButton.error.microphoneBlocked,
+          }));
+
+          return;
+        }
+
+        if (permissionResult === 'unavailable') {
+          setVoiceFlowState(currentState => ({
+            ...currentState,
+            status: 'idle',
+            errorMessage: texts.home.recordButton.error.microphoneUnavailable,
+          }));
+
+          return;
+        }
+
+        setVoiceFlowState(currentState => ({
+          ...currentState,
+          status: 'idle',
+          errorMessage: texts.home.recordButton.error.microphoneDenied,
+        }));
+      } catch {
+        setVoiceFlowState(currentState => ({
+          ...currentState,
+          status: 'idle',
+          errorMessage: texts.home.recordButton.error.generic,
+        }));
+      }
 
       return;
     }
 
     if (voiceFlowState.status === 'listening') {
+      if (processingTimeoutRef.current) {
+        clearTimeout(processingTimeoutRef.current);
+      }
+
       setVoiceFlowState(currentState => ({
         ...currentState,
         status: 'processing',
