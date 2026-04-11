@@ -8,33 +8,15 @@ import { RecordButton } from '../../shared/ui/RecordButton';
 import { Screen } from '../../shared/ui/Screen';
 import { TranslationPreviewBlock } from '../../shared/ui/TranslationPreviewBlock';
 import { colors } from '../../theme/colors';
-import { previewContentByMode } from '../../utils/previewContent';
+import { getHomeScreenPreviewState } from '../../utils/helpers';
 import { texts } from '../../utils/texts';
 
 export function HomeScreen(): React.JSX.Element {
   const { selectedMode, setSelectedMode } = useTranslationMode();
   const { recordButtonStatus, handleRecordButtonPress } = useRecordButtonState();
 
-  const isProcessing = recordButtonStatus === 'processing';
-  const isListening = recordButtonStatus === 'listening';
-  const isIdle = recordButtonStatus === 'idle';
-
-  const shouldShowEnglish = selectedMode === 'ruToEn' || selectedMode === 'ruToEnHe';
-  const shouldShowHebrew = selectedMode === 'ruToHe' || selectedMode === 'ruToEnHe';
-
-  const basePreviewContent = previewContentByMode[selectedMode];
-
-  const previewContent = (() => {
-    if (isListening) {
-      return texts.home.previewState.listening;
-    }
-
-    if (isProcessing) {
-      return texts.home.previewState.processing;
-    }
-
-    return basePreviewContent;
-  })();
+  const { previewContent, shouldShowEnglish, shouldShowHebrew, isIdle, isProcessing } =
+    getHomeScreenPreviewState(selectedMode, recordButtonStatus);
 
   return (
     <Screen>

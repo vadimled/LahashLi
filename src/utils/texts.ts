@@ -20,15 +20,37 @@ export const texts = {
       },
     },
     previewState: {
-      listening: {
-        source: 'Listening for your Russian phrase...',
-        targetEn: 'English translation will appear here.',
-        targetHe: 'התרגום לעברית יופיע כאן.',
+      ruToEn: {
+        listening: {
+          source: 'Listening for your Russian phrase...',
+          targetEn: 'English translation will appear here.',
+        },
+        processing: {
+          source: 'Preparing your translation...',
+          targetEn: 'Generating English reply...',
+        },
       },
-      processing: {
-        source: 'Preparing your translation...',
-        targetEn: 'Generating English reply...',
-        targetHe: 'מייצר תשובה בעברית...',
+      ruToHe: {
+        listening: {
+          source: 'Listening for your Russian phrase...',
+          targetHe: 'התרגום לעברית יופיע כאן.',
+        },
+        processing: {
+          source: 'Preparing your translation...',
+          targetHe: 'מכין תשובה בעברית...',
+        },
+      },
+      ruToEnHe: {
+        listening: {
+          source: 'Listening for your Russian phrase...',
+          targetEn: 'English translation will appear here.',
+          targetHe: 'התרגום לעברית יופיע כאן.',
+        },
+        processing: {
+          source: 'Preparing your translation...',
+          targetEn: 'Generating English reply...',
+          targetHe: 'מכין תשובה בעברית...',
+        },
       },
     },
   },
