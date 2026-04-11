@@ -37,6 +37,8 @@
 	<string>We use your location while the app is in use.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>LahashLi needs microphone access to capture your speech and prepare translations.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>LahashLi needs speech recognition access to convert your Russian speech into text.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

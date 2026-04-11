@@ -20,7 +20,7 @@ export function HomeScreen(): React.JSX.Element {
     translationHe,
     errorMessage,
     handleRecordButtonPress,
-  } = useVoiceFlow(selectedMode);
+  } = useVoiceFlow();
 
   const { previewContent, shouldShowEnglish, shouldShowHebrew, isProcessing, hasResolvedContent } =
     getHomeScreenPreviewState({

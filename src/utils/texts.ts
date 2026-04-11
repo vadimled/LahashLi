@@ -19,9 +19,13 @@ export const texts = {
         processing: 'Preparing translation...',
       },
       error: {
-        microphoneDenied: 'Microphone access is required to start voice input.',
-        microphoneBlocked: 'Microphone access is blocked. Enable it in iPhone Settings.',
-        microphoneUnavailable: 'Microphone access is unavailable on this device.',
+        speechRecognizerUnavailable: 'Speech recognition is not available on this device.',
+        permissionDenied:
+          'Microphone and Speech Recognition access are required to start voice input.',
+        permissionRestricted: 'Speech input is restricted on this iPhone.',
+        recordingStartFailed: 'Could not start listening. Please try again.',
+        recognitionFailed: 'Speech recognition failed. Please try again.',
+        noSpeech: 'No speech was detected. Please try again and speak a little longer.',
         generic: 'Something went wrong while starting voice input.',
       },
     },

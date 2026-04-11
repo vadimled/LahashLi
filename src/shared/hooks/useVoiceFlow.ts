@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useVoice } from 'react-native-voicekit';
 
-import { previewContentByMode } from '../../utils/previewContent';
 import { RecordButtonStatus } from '../../utils/recordButton';
-import { requestMicrophonePermission } from '../../utils/microphonePermission';
 import { texts } from '../../utils/texts';
-import { TranslationMode } from '../../utils/translationModes';
+import {
+  mapVoiceErrorToMessage,
+  normalizeTranscript,
+  voiceRecognitionOptions,
+} from '../../utils/voiceRecognition';
 
 type VoiceFlowState = {
   status: RecordButtonStatus;
@@ -20,25 +23,76 @@ type UseVoiceFlowReturn = {
   translationEn?: string;
   translationHe?: string;
   errorMessage?: string;
-  handleRecordButtonPress: () => void;
+  handleRecordButtonPress: () => Promise<void>;
 };
 
-const MOCK_PROCESSING_DELAY_MS = 1400;
+const FINAL_RESULT_TIMEOUT_MS = 1800;
 
-export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn {
+export function useVoiceFlow(): UseVoiceFlowReturn {
   const [voiceFlowState, setVoiceFlowState] = useState<VoiceFlowState>({
     status: 'idle',
   });
 
-  const processingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const waitingForFinalResultRef = useRef(false);
+  const finalResultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const {
+    available,
+    listening,
+    transcript: liveTranscript,
+    startListening,
+    stopListening,
+    resetTranscript,
+  } = useVoice({
+    ...voiceRecognitionOptions,
+    enablePartialResults: true,
+  });
+
+  const clearFinalResultTimeout = useCallback(() => {
+    if (finalResultTimeoutRef.current) {
+      clearTimeout(finalResultTimeoutRef.current);
+      finalResultTimeoutRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (listening) {
+      setVoiceFlowState(currentState => ({
+        ...currentState,
+        status: 'listening',
+        errorMessage: undefined,
+      }));
+
+      return;
+    }
+
+    if (!waitingForFinalResultRef.current) {
+      return;
+    }
+
+    const normalizedTranscript = normalizeTranscript(liveTranscript);
+
+    if (!normalizedTranscript) {
+      return;
+    }
+
+    waitingForFinalResultRef.current = false;
+    clearFinalResultTimeout();
+
+    setVoiceFlowState({
+      status: 'idle',
+      transcript: normalizedTranscript,
+      translationEn: undefined,
+      translationHe: undefined,
+      errorMessage: undefined,
+    });
+  }, [clearFinalResultTimeout, listening, liveTranscript]);
 
   useEffect(() => {
     return () => {
-      if (processingTimeoutRef.current) {
-        clearTimeout(processingTimeoutRef.current);
-      }
+      clearFinalResultTimeout();
     };
-  }, []);
+  }, [clearFinalResultTimeout]);
 
   const handleRecordButtonPress = useCallback(async () => {
     if (voiceFlowState.status === 'processing') {
@@ -46,49 +100,37 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
     }
 
     if (voiceFlowState.status === 'idle') {
-      try {
-        const permissionResult = await requestMicrophonePermission();
-
-        if (permissionResult === 'granted') {
-          setVoiceFlowState(currentState => ({
-            ...currentState,
-            status: 'listening',
-            errorMessage: undefined,
-          }));
-
-          return;
-        }
-
-        if (permissionResult === 'blocked') {
-          setVoiceFlowState(currentState => ({
-            ...currentState,
-            status: 'idle',
-            errorMessage: texts.home.recordButton.error.microphoneBlocked,
-          }));
-
-          return;
-        }
-
-        if (permissionResult === 'unavailable') {
-          setVoiceFlowState(currentState => ({
-            ...currentState,
-            status: 'idle',
-            errorMessage: texts.home.recordButton.error.microphoneUnavailable,
-          }));
-
-          return;
-        }
-
+      if (!available) {
         setVoiceFlowState(currentState => ({
           ...currentState,
           status: 'idle',
-          errorMessage: texts.home.recordButton.error.microphoneDenied,
+          errorMessage: texts.home.recordButton.error.speechRecognizerUnavailable,
         }));
-      } catch {
+
+        return;
+      }
+
+      waitingForFinalResultRef.current = false;
+      clearFinalResultTimeout();
+      resetTranscript();
+
+      try {
+        await startListening();
+
+        setVoiceFlowState({
+          status: 'listening',
+          transcript: undefined,
+          translationEn: undefined,
+          translationHe: undefined,
+          errorMessage: undefined,
+        });
+      } catch (error) {
+        const typedError = error as { code?: string };
+
         setVoiceFlowState(currentState => ({
           ...currentState,
           status: 'idle',
-          errorMessage: texts.home.recordButton.error.generic,
+          errorMessage: mapVoiceErrorToMessage(typedError.code),
         }));
       }
 
@@ -96,9 +138,7 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
     }
 
     if (voiceFlowState.status === 'listening') {
-      if (processingTimeoutRef.current) {
-        clearTimeout(processingTimeoutRef.current);
-      }
+      waitingForFinalResultRef.current = true;
 
       setVoiceFlowState(currentState => ({
         ...currentState,
@@ -106,19 +146,45 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
         errorMessage: undefined,
       }));
 
-      processingTimeoutRef.current = setTimeout(() => {
-        const mockResult = previewContentByMode[selectedMode];
+      clearFinalResultTimeout();
 
-        setVoiceFlowState({
+      finalResultTimeoutRef.current = setTimeout(() => {
+        if (!waitingForFinalResultRef.current) {
+          return;
+        }
+
+        waitingForFinalResultRef.current = false;
+
+        setVoiceFlowState(currentState => ({
+          ...currentState,
           status: 'idle',
-          transcript: mockResult.source,
-          translationEn: mockResult.targetEn,
-          translationHe: mockResult.targetHe,
-          errorMessage: undefined,
-        });
-      }, MOCK_PROCESSING_DELAY_MS);
+          errorMessage: texts.home.recordButton.error.noSpeech,
+        }));
+      }, FINAL_RESULT_TIMEOUT_MS);
+
+      try {
+        await stopListening();
+      } catch (error) {
+        waitingForFinalResultRef.current = false;
+        clearFinalResultTimeout();
+
+        const typedError = error as { code?: string };
+
+        setVoiceFlowState(currentState => ({
+          ...currentState,
+          status: 'idle',
+          errorMessage: mapVoiceErrorToMessage(typedError.code),
+        }));
+      }
     }
-  }, [selectedMode, voiceFlowState.status]);
+  }, [
+    available,
+    clearFinalResultTimeout,
+    resetTranscript,
+    startListening,
+    stopListening,
+    voiceFlowState.status,
+  ]);
 
   return {
     recordButtonStatus: voiceFlowState.status,
