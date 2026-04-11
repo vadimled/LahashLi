@@ -1,5 +1,5 @@
-import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useVoiceFlow } from '../../shared/hooks/useVoiceFlow';
 import { useTranslationMode } from '../../shared/hooks/useTranslationMode';
@@ -11,25 +11,70 @@ import { colors } from '../../theme/colors';
 import { getHomeScreenPreviewState } from '../../utils/helpers';
 import { texts } from '../../utils/texts';
 
+const RECOGNIZED_SPEECH_CONTENT_HEIGHT = 116;
+
 export function HomeScreen(): React.JSX.Element {
   const { selectedMode, setSelectedMode } = useTranslationMode();
   const {
     recordButtonStatus,
     transcript,
+    liveTranscript,
     translationEn,
     translationHe,
     errorMessage,
     handleRecordButtonPress,
   } = useVoiceFlow();
 
-  const { previewContent, shouldShowEnglish, shouldShowHebrew, isProcessing, hasResolvedContent } =
-    getHomeScreenPreviewState({
-      selectedMode,
-      recordButtonStatus,
-      transcript,
-      translationEn,
-      translationHe,
-    });
+  const recognizedSpeechScrollRef = useRef<ScrollView | null>(null);
+  const wasListeningRef = useRef(false);
+
+  const {
+    previewContent,
+    shouldShowEnglish,
+    shouldShowHebrew,
+    isListening,
+    isProcessing,
+    hasResolvedContent,
+  } = getHomeScreenPreviewState({
+    selectedMode,
+    recordButtonStatus,
+    transcript,
+    translationEn,
+    translationHe,
+  });
+
+  const recognizedSpeechLabel = isListening
+    ? texts.home.recognizedSpeech.liveLabel
+    : texts.home.recognizedSpeech.finalLabel;
+
+  const recognizedSpeechValue = isListening
+    ? liveTranscript || texts.home.recognizedSpeech.emptyLive
+    : transcript || texts.home.recognizedSpeech.emptyFinal;
+
+  const isRecognizedSpeechEmpty = isListening ? !liveTranscript : !transcript;
+
+  const handleRecognizedSpeechContentSizeChange = useCallback(() => {
+    if (!isListening) {
+      return;
+    }
+
+    recognizedSpeechScrollRef.current?.scrollToEnd({ animated: true });
+  }, [isListening]);
+
+  useEffect(() => {
+    const hasSwitchedFromLiveToFinal = wasListeningRef.current && !isListening;
+
+    if (hasSwitchedFromLiveToFinal) {
+      requestAnimationFrame(() => {
+        recognizedSpeechScrollRef.current?.scrollTo({
+          y: 0,
+          animated: false,
+        });
+      });
+    }
+
+    wasListeningRef.current = isListening;
+  }, [isListening, recognizedSpeechValue]);
 
   return (
     <Screen>
@@ -52,6 +97,40 @@ export function HomeScreen(): React.JSX.Element {
         </View>
 
         {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+      </View>
+
+      <View style={styles.recognizedSpeechCard}>
+        <Text style={styles.recognizedSpeechTitle}>{texts.home.recognizedSpeech.title}</Text>
+
+        <View style={styles.recognizedSpeechBlock}>
+          <Text
+            style={[
+              styles.recognizedSpeechLabel,
+              isListening ? styles.recognizedSpeechLabelActive : styles.recognizedSpeechLabelFinal,
+            ]}
+          >
+            {recognizedSpeechLabel}
+          </Text>
+
+          <View style={styles.recognizedSpeechContentFrame}>
+            <ScrollView
+              ref={recognizedSpeechScrollRef}
+              showsVerticalScrollIndicator
+              nestedScrollEnabled
+              onContentSizeChange={handleRecognizedSpeechContentSizeChange}
+              contentContainerStyle={styles.recognizedSpeechScrollContent}
+            >
+              <Text
+                style={[
+                  styles.recognizedSpeechValue,
+                  isRecognizedSpeechEmpty && styles.recognizedSpeechValueEmpty,
+                ]}
+              >
+                {recognizedSpeechValue}
+              </Text>
+            </ScrollView>
+          </View>
+        </View>
       </View>
 
       <View style={styles.resultCard}>
@@ -123,6 +202,52 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     textAlign: 'center',
     color: colors.danger,
+  },
+  recognizedSpeechCard: {
+    backgroundColor: colors.backgroundSecondary,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 20,
+    padding: 16,
+    gap: 12,
+    marginBottom: 16,
+  },
+  recognizedSpeechTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  recognizedSpeechBlock: {
+    gap: 8,
+  },
+  recognizedSpeechLabel: {
+    fontSize: 12,
+    textTransform: 'uppercase',
+  },
+  recognizedSpeechLabelActive: {
+    color: colors.accent,
+  },
+  recognizedSpeechLabelFinal: {
+    color: colors.textSecondary,
+  },
+  recognizedSpeechContentFrame: {
+    height: RECOGNIZED_SPEECH_CONTENT_HEIGHT,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    overflow: 'hidden',
+  },
+  recognizedSpeechScrollContent: {
+    padding: 12,
+  },
+  recognizedSpeechValue: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: colors.textPrimary,
+  },
+  recognizedSpeechValueEmpty: {
+    color: colors.textMuted,
   },
   resultCard: {
     backgroundColor: colors.surface,

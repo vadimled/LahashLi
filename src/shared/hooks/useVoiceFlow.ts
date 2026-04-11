@@ -1,4 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  NativeEventEmitter,
+  NativeModules,
+  type EmitterSubscription,
+} from 'react-native';
 import { useVoice } from 'react-native-voicekit';
 
 import { RecordButtonStatus } from '../../utils/recordButton';
@@ -20,6 +25,7 @@ type VoiceFlowState = {
 type UseVoiceFlowReturn = {
   recordButtonStatus: RecordButtonStatus;
   transcript?: string;
+  liveTranscript?: string;
   translationEn?: string;
   translationHe?: string;
   errorMessage?: string;
@@ -34,12 +40,14 @@ export function useVoiceFlow(): UseVoiceFlowReturn {
   });
 
   const waitingForFinalResultRef = useRef(false);
-  const finalResultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const finalResultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+      null,
+  );
 
   const {
     available,
     listening,
-    transcript: liveTranscript,
+    transcript: rawLiveTranscript,
     startListening,
     stopListening,
     resetTranscript,
@@ -48,11 +56,34 @@ export function useVoiceFlow(): UseVoiceFlowReturn {
     enablePartialResults: true,
   });
 
+  const liveTranscript = normalizeTranscript(rawLiveTranscript);
+
   const clearFinalResultTimeout = useCallback(() => {
     if (finalResultTimeoutRef.current) {
       clearTimeout(finalResultTimeoutRef.current);
       finalResultTimeoutRef.current = null;
     }
+  }, []);
+
+  useEffect(() => {
+    const nativeVoiceKitModule = NativeModules.RNVoiceKit;
+
+    if (!nativeVoiceKitModule) {
+      return;
+    }
+
+    const eventEmitter = new NativeEventEmitter(nativeVoiceKitModule);
+
+    const subscriptions: EmitterSubscription[] = [
+      eventEmitter.addListener('availability-change', () => {}),
+      eventEmitter.addListener('RNVoiceKit.availability-change', () => {}),
+    ];
+
+    return () => {
+      subscriptions.forEach(subscription => {
+        subscription.remove();
+      });
+    };
   }, []);
 
   useEffect(() => {
@@ -70,9 +101,7 @@ export function useVoiceFlow(): UseVoiceFlowReturn {
       return;
     }
 
-    const normalizedTranscript = normalizeTranscript(liveTranscript);
-
-    if (!normalizedTranscript) {
+    if (!liveTranscript) {
       return;
     }
 
@@ -81,7 +110,7 @@ export function useVoiceFlow(): UseVoiceFlowReturn {
 
     setVoiceFlowState({
       status: 'idle',
-      transcript: normalizedTranscript,
+      transcript: liveTranscript,
       translationEn: undefined,
       translationHe: undefined,
       errorMessage: undefined,
@@ -104,7 +133,8 @@ export function useVoiceFlow(): UseVoiceFlowReturn {
         setVoiceFlowState(currentState => ({
           ...currentState,
           status: 'idle',
-          errorMessage: texts.home.recordButton.error.speechRecognizerUnavailable,
+          errorMessage:
+          texts.home.recordButton.error.speechRecognizerUnavailable,
         }));
 
         return;
@@ -189,6 +219,7 @@ export function useVoiceFlow(): UseVoiceFlowReturn {
   return {
     recordButtonStatus: voiceFlowState.status,
     transcript: voiceFlowState.transcript,
+    liveTranscript,
     translationEn: voiceFlowState.translationEn,
     translationHe: voiceFlowState.translationHe,
     errorMessage: voiceFlowState.errorMessage,
