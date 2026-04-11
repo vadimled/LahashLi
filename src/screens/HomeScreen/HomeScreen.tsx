@@ -29,7 +29,7 @@ export function HomeScreen() {
       <View style={styles.center}>
         <RecordButton status={recordButtonStatus} onPress={handleRecordButtonPress} />
 
-        <Text style={styles.hint}>{texts.home.hint}</Text>
+        <Text style={styles.hint}>{texts.home.recordButton.hint[recordButtonStatus]}</Text>
       </View>
 
       <View style={styles.resultCard}>

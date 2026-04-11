@@ -3,10 +3,8 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors } from '../../theme/colors';
 import { uiConstants } from '../../utils/constants';
-import {
-  RecordButtonStatus,
-  recordButtonTexts,
-} from '../../utils/recordButton';
+import { RecordButtonStatus } from '../../utils/recordButton';
+import { texts } from '../../utils/texts';
 
 type RecordButtonProps = {
   status: RecordButtonStatus;
@@ -21,8 +19,10 @@ export function RecordButton({ status, onPress }: RecordButtonProps) {
 
   return (
     <Pressable
-      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={texts.home.recordButton.text[status]}
       disabled={isProcessing}
+      onPress={onPress}
       style={({ pressed }) => [
         styles.button,
         isListening && styles.buttonListening,
@@ -30,7 +30,7 @@ export function RecordButton({ status, onPress }: RecordButtonProps) {
         pressed && !isProcessing && styles.buttonPressed,
       ]}
     >
-      <Text style={styles.text}>{recordButtonTexts[status]}</Text>
+      <Text style={styles.text}>{texts.home.recordButton.text[status]}</Text>
     </Pressable>
   );
 }
