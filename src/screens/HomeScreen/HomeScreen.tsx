@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { ActivityIndicator, LayoutChangeEvent, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { useVoiceFlow } from '../../shared/hooks/useVoiceFlow';
 import { useTranslationMode } from '../../shared/hooks/useTranslationMode';
+import { useVoiceFlow } from '../../shared/hooks/useVoiceFlow';
 import { ModeSelector } from '../../shared/ui/ModeSelector';
 import { RecordButton } from '../../shared/ui/RecordButton';
 import { Screen } from '../../shared/ui/Screen';
@@ -17,6 +17,7 @@ const PREVIEW_SCROLL_TOP_OFFSET = 12;
 
 export function HomeScreen(): React.JSX.Element {
   const { selectedMode, setSelectedMode } = useTranslationMode();
+
   const {
     recordButtonStatus,
     transcript,
@@ -25,21 +26,20 @@ export function HomeScreen(): React.JSX.Element {
     translationHe,
     errorMessage,
     handleRecordButtonPress,
-  } = useVoiceFlow();
+  } = useVoiceFlow(selectedMode);
 
   const contentScrollRef = useRef<ScrollView | null>(null);
   const recognizedSpeechScrollRef = useRef<ScrollView | null>(null);
   const wasListeningRef = useRef(false);
   const previewCardYRef = useRef(0);
 
-  const { previewContent, shouldShowEnglish, shouldShowHebrew, isListening, isProcessing, hasResolvedContent } =
-    getHomeScreenPreviewState({
-      selectedMode,
-      recordButtonStatus,
-      transcript,
-      translationEn,
-      translationHe,
-    });
+  const { previewContent, shouldShowEnglish, shouldShowHebrew, isListening, isProcessing } = getHomeScreenPreviewState({
+    selectedMode,
+    recordButtonStatus,
+    transcript,
+    translationEn,
+    translationHe,
+  });
 
   const recognizedSpeechLabel = isListening
     ? texts.home.recognizedSpeech.liveLabel
@@ -87,97 +87,95 @@ export function HomeScreen(): React.JSX.Element {
 
   return (
     <Screen>
-      <View style={styles.container}>
-        <View style={styles.fixedTopSection}>
-          <View style={styles.header}>
-            <Text style={styles.title}>{texts.app.name}</Text>
-            <Text style={styles.subtitle}>{texts.app.subtitle}</Text>
-          </View>
-
-          <ModeSelector selectedMode={selectedMode} onSelectMode={setSelectedMode} />
+      <View style={styles.fixedTopSection}>
+        <View style={styles.header}>
+          <Text style={styles.title}>{texts.app.name}</Text>
+          <Text style={styles.subtitle}>{texts.app.subtitle}</Text>
         </View>
 
-        <ScrollView
-          ref={contentScrollRef}
-          style={styles.contentScroll}
-          contentContainerStyle={styles.contentScrollContainer}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.center}>
-            <RecordButton status={recordButtonStatus} onPress={handleRecordButtonPress} />
+        <ModeSelector selectedMode={selectedMode} onSelectMode={setSelectedMode} />
+      </View>
 
-            <View style={styles.hintRow}>
-              {isProcessing ? <ActivityIndicator size="small" color={colors.accent} style={styles.spinner} /> : null}
+      <ScrollView
+        ref={contentScrollRef}
+        style={styles.contentScroll}
+        contentContainerStyle={styles.contentScrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.center}>
+          <RecordButton
+            status={recordButtonStatus}
+            onPress={() => {
+              void handleRecordButtonPress();
+            }}
+          />
 
-              <Text style={styles.hint}>{texts.home.recordButton.hint[recordButtonStatus]}</Text>
-            </View>
+          <View style={styles.hintRow}>
+            {isProcessing ? <ActivityIndicator size="small" color={colors.accent} style={styles.spinner} /> : null}
 
-            {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+            <Text style={styles.hint}>{texts.home.recordButton.hint[recordButtonStatus]}</Text>
           </View>
 
-          <View style={styles.recognizedSpeechCard}>
-            <Text style={styles.recognizedSpeechTitle}>{texts.home.recognizedSpeech.title}</Text>
+          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+        </View>
 
-            <View style={styles.recognizedSpeechBlock}>
-              <Text
-                style={[
-                  styles.recognizedSpeechLabel,
-                  isListening ? styles.recognizedSpeechLabelActive : styles.recognizedSpeechLabelFinal,
-                ]}
-              >
-                {recognizedSpeechLabel}
-              </Text>
+        <View style={styles.recognizedSpeechCard}>
+          <Text style={styles.recognizedSpeechTitle}>{texts.home.recognizedSpeech.title}</Text>
 
-              <View style={styles.recognizedSpeechContentFrame}>
-                <ScrollView
-                  ref={recognizedSpeechScrollRef}
-                  showsVerticalScrollIndicator
-                  nestedScrollEnabled
-                  onContentSizeChange={handleRecognizedSpeechContentSizeChange}
-                  contentContainerStyle={styles.recognizedSpeechScrollContent}
-                >
-                  {isRecognizedSpeechEmpty ? (
-                    <Text style={[styles.recognizedSpeechValue, styles.recognizedSpeechValueEmpty]}>
-                      {recognizedSpeechValue}
-                    </Text>
-                  ) : isListening ? (
-                    <Text style={styles.recognizedSpeechValue}>
-                      <Text>{leadingText}</Text>
-                      <Text style={styles.recognizedSpeechValueHighlighted}>{highlightedText}</Text>
-                    </Text>
-                  ) : (
-                    <Text style={styles.recognizedSpeechValue}>{recognizedSpeechValue}</Text>
-                  )}
-                </ScrollView>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.resultCard} onLayout={handlePreviewCardLayout}>
-            <Text style={styles.resultLabel}>{texts.home.previewLabel}</Text>
-
-            <Text style={[styles.resultSource, !hasResolvedContent && styles.resultSourcePlaceholder]}>
-              {previewContent.source}
+          <View style={styles.recognizedSpeechBlock}>
+            <Text
+              style={[
+                styles.recognizedSpeechLabel,
+                isListening ? styles.recognizedSpeechLabelActive : styles.recognizedSpeechLabelFinal,
+              ]}
+            >
+              {recognizedSpeechLabel}
             </Text>
 
-            {shouldShowEnglish ? (
-              <TranslationPreviewBlock label={texts.home.previewEnglishLabel} value={previewContent.targetEn} />
-            ) : null}
-
-            {shouldShowHebrew ? (
-              <TranslationPreviewBlock label={texts.home.previewHebrewLabel} value={previewContent.targetHe} isRtl />
-            ) : null}
+            <View style={styles.recognizedSpeechContentFrame}>
+              <ScrollView
+                ref={recognizedSpeechScrollRef}
+                showsVerticalScrollIndicator={!isListening}
+                onContentSizeChange={handleRecognizedSpeechContentSizeChange}
+                contentContainerStyle={styles.recognizedSpeechScrollContent}
+              >
+                {isRecognizedSpeechEmpty ? (
+                  <Text style={[styles.recognizedSpeechValue, styles.recognizedSpeechValueEmpty]}>
+                    {recognizedSpeechValue}
+                  </Text>
+                ) : isListening ? (
+                  <Text style={styles.recognizedSpeechValue}>
+                    {leadingText} <Text style={styles.recognizedSpeechValueHighlighted}>{highlightedText}</Text>
+                  </Text>
+                ) : (
+                  <Text style={styles.recognizedSpeechValue}>{recognizedSpeechValue}</Text>
+                )}
+              </ScrollView>
+            </View>
           </View>
-        </ScrollView>
-      </View>
+        </View>
+
+        <View style={styles.resultCard} onLayout={handlePreviewCardLayout}>
+          <Text style={styles.resultLabel}>{texts.home.previewLabel}</Text>
+
+          <Text style={[styles.resultSource, !transcript && styles.resultSourcePlaceholder]}>
+            {previewContent.source}
+          </Text>
+
+          {shouldShowEnglish ? (
+            <TranslationPreviewBlock label={texts.home.previewEnglishLabel} value={previewContent.targetEn} />
+          ) : null}
+
+          {shouldShowHebrew ? (
+            <TranslationPreviewBlock label={texts.home.previewHebrewLabel} value={previewContent.targetHe} isRtl />
+          ) : null}
+        </View>
+      </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   fixedTopSection: {
     gap: 24,
     paddingBottom: 16,

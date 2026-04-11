@@ -6,8 +6,11 @@ import {
 } from 'react-native';
 import { useVoice } from 'react-native-voicekit';
 
+import { openAiConfig } from '../../utils/openAiConfig';
+import { translateWithOpenAi } from '../../utils/openAiTranslation';
 import { RecordButtonStatus } from '../../utils/recordButton';
 import { texts } from '../../utils/texts';
+import { TranslationMode } from '../../utils/translationModes';
 import {
   mapVoiceErrorToMessage,
   normalizeTranscript,
@@ -34,14 +37,16 @@ type UseVoiceFlowReturn = {
 
 const FINAL_RESULT_TIMEOUT_MS = 1800;
 
-export function useVoiceFlow(): UseVoiceFlowReturn {
+export function useVoiceFlow(
+  selectedMode: TranslationMode,
+): UseVoiceFlowReturn {
   const [voiceFlowState, setVoiceFlowState] = useState<VoiceFlowState>({
     status: 'idle',
   });
 
   const waitingForFinalResultRef = useRef(false);
   const finalResultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-      null,
+    null,
   );
 
   const {
@@ -64,6 +69,48 @@ export function useVoiceFlow(): UseVoiceFlowReturn {
       finalResultTimeoutRef.current = null;
     }
   }, []);
+
+  const translateFinalTranscript = useCallback(
+    async (finalTranscript: string) => {
+      if (!openAiConfig.apiKey.trim()) {
+        setVoiceFlowState({
+          status: 'idle',
+          transcript: finalTranscript,
+          translationEn: undefined,
+          translationHe: undefined,
+          errorMessage: texts.home.recordButton.error.missingOpenAiApiKey,
+        });
+
+        return;
+      }
+
+      try {
+        const translationResult = await translateWithOpenAi({
+          text: finalTranscript,
+          mode: selectedMode,
+          apiKey: openAiConfig.apiKey,
+          model: openAiConfig.model,
+        });
+
+        setVoiceFlowState({
+          status: 'idle',
+          transcript: translationResult.source,
+          translationEn: translationResult.translationEn,
+          translationHe: translationResult.translationHe,
+          errorMessage: undefined,
+        });
+      } catch {
+        setVoiceFlowState({
+          status: 'idle',
+          transcript: finalTranscript,
+          translationEn: undefined,
+          translationHe: undefined,
+          errorMessage: texts.home.recordButton.error.translationFailed,
+        });
+      }
+    },
+    [selectedMode],
+  );
 
   useEffect(() => {
     const nativeVoiceKitModule = NativeModules.RNVoiceKit;
@@ -93,7 +140,6 @@ export function useVoiceFlow(): UseVoiceFlowReturn {
         status: 'listening',
         errorMessage: undefined,
       }));
-
       return;
     }
 
@@ -108,14 +154,13 @@ export function useVoiceFlow(): UseVoiceFlowReturn {
     waitingForFinalResultRef.current = false;
     clearFinalResultTimeout();
 
-    setVoiceFlowState({
-      status: 'idle',
-      transcript: liveTranscript,
-      translationEn: undefined,
-      translationHe: undefined,
-      errorMessage: undefined,
-    });
-  }, [clearFinalResultTimeout, listening, liveTranscript]);
+    void translateFinalTranscript(liveTranscript);
+  }, [
+    clearFinalResultTimeout,
+    listening,
+    liveTranscript,
+    translateFinalTranscript,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -136,7 +181,6 @@ export function useVoiceFlow(): UseVoiceFlowReturn {
           errorMessage:
           texts.home.recordButton.error.speechRecognizerUnavailable,
         }));
-
         return;
       }
 
