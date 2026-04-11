@@ -10,6 +10,7 @@ export const colors = {
   primaryPressed: '#004A44',
   accent: '#23CFC8',
   accentPressed: '#1DB8B2',
+  accentHighlighted: '#8ae8e5',
 
   textPrimary: '#F2F2F2',
   textSecondary: '#C7C7C7',

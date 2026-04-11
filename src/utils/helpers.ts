@@ -26,6 +26,13 @@ type HomeScreenPreviewState = {
   hasResolvedContent: boolean;
 };
 
+type HighlightedRecognizedSpeech = {
+  leadingText: string;
+  highlightedText: string;
+};
+
+const LIVE_RECOGNIZED_SPEECH_HIGHLIGHTED_WORDS_COUNT = 3;
+
 export function getNextRecordButtonStatus(currentStatus: RecordButtonStatus): RecordButtonStatus {
   if (currentStatus === 'idle') {
     return 'listening';
@@ -52,8 +59,7 @@ export function getHomeScreenPreviewState({
   const shouldShowEnglish = selectedMode === 'ruToEn' || selectedMode === 'ruToEnHe';
   const shouldShowHebrew = selectedMode === 'ruToHe' || selectedMode === 'ruToEnHe';
 
-  const hasResolvedContent =
-    Boolean(transcript) || Boolean(translationEn) || Boolean(translationHe);
+  const hasResolvedContent = Boolean(transcript) || Boolean(translationEn) || Boolean(translationHe);
 
   const previewContent = (() => {
     if (isListening) {
@@ -67,12 +73,8 @@ export function getHomeScreenPreviewState({
     if (hasResolvedContent) {
       return {
         source: transcript ?? texts.home.previewState[selectedMode].idle.source,
-        targetEn: shouldShowEnglish
-          ? translationEn ?? texts.home.previewState[selectedMode].idle.targetEn
-          : undefined,
-        targetHe: shouldShowHebrew
-          ? translationHe ?? texts.home.previewState[selectedMode].idle.targetHe
-          : undefined,
+        targetEn: shouldShowEnglish ? translationEn ?? texts.home.previewState[selectedMode].idle.targetEn : undefined,
+        targetHe: shouldShowHebrew ? translationHe ?? texts.home.previewState[selectedMode].idle.targetHe : undefined,
       };
     }
 
@@ -87,5 +89,33 @@ export function getHomeScreenPreviewState({
     isListening,
     isProcessing,
     hasResolvedContent,
+  };
+}
+
+export function getHighlightedRecognizedSpeech(text: string): HighlightedRecognizedSpeech {
+  const normalizedText = text.trim();
+
+  if (!normalizedText) {
+    return {
+      leadingText: '',
+      highlightedText: '',
+    };
+  }
+
+  const words = normalizedText.split(/\s+/);
+
+  if (words.length <= LIVE_RECOGNIZED_SPEECH_HIGHLIGHTED_WORDS_COUNT) {
+    return {
+      leadingText: '',
+      highlightedText: normalizedText,
+    };
+  }
+
+  const leadingWords = words.slice(0, -LIVE_RECOGNIZED_SPEECH_HIGHLIGHTED_WORDS_COUNT);
+  const highlightedWords = words.slice(-LIVE_RECOGNIZED_SPEECH_HIGHLIGHTED_WORDS_COUNT);
+
+  return {
+    leadingText: `${leadingWords.join(' ')} `,
+    highlightedText: highlightedWords.join(' '),
   };
 }

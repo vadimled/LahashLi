@@ -1,12 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import {
-  ActivityIndicator,
-  LayoutChangeEvent,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, LayoutChangeEvent, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useVoiceFlow } from '../../shared/hooks/useVoiceFlow';
 import { useTranslationMode } from '../../shared/hooks/useTranslationMode';
@@ -15,7 +8,7 @@ import { RecordButton } from '../../shared/ui/RecordButton';
 import { Screen } from '../../shared/ui/Screen';
 import { TranslationPreviewBlock } from '../../shared/ui/TranslationPreviewBlock';
 import { colors } from '../../theme/colors';
-import { getHomeScreenPreviewState } from '../../utils/helpers';
+import { getHighlightedRecognizedSpeech, getHomeScreenPreviewState } from '../../utils/helpers';
 import { texts } from '../../utils/texts';
 
 const RECOGNIZED_SPEECH_CONTENT_HEIGHT = 116;
@@ -39,20 +32,14 @@ export function HomeScreen(): React.JSX.Element {
   const wasListeningRef = useRef(false);
   const previewCardYRef = useRef(0);
 
-  const {
-    previewContent,
-    shouldShowEnglish,
-    shouldShowHebrew,
-    isListening,
-    isProcessing,
-    hasResolvedContent,
-  } = getHomeScreenPreviewState({
-    selectedMode,
-    recordButtonStatus,
-    transcript,
-    translationEn,
-    translationHe,
-  });
+  const { previewContent, shouldShowEnglish, shouldShowHebrew, isListening, isProcessing, hasResolvedContent } =
+    getHomeScreenPreviewState({
+      selectedMode,
+      recordButtonStatus,
+      transcript,
+      translationEn,
+      translationHe,
+    });
 
   const recognizedSpeechLabel = isListening
     ? texts.home.recognizedSpeech.liveLabel
@@ -63,6 +50,8 @@ export function HomeScreen(): React.JSX.Element {
     : transcript || texts.home.recognizedSpeech.emptyFinal;
 
   const isRecognizedSpeechEmpty = isListening ? !liveTranscript : !transcript;
+
+  const { leadingText, highlightedText } = getHighlightedRecognizedSpeech(liveTranscript ?? '');
 
   const handleRecognizedSpeechContentSizeChange = useCallback(() => {
     if (!isListening) {
@@ -105,55 +94,37 @@ export function HomeScreen(): React.JSX.Element {
             <Text style={styles.subtitle}>{texts.app.subtitle}</Text>
           </View>
 
-          <ModeSelector
-            selectedMode={selectedMode}
-            onSelectMode={setSelectedMode}
-          />
+          <ModeSelector selectedMode={selectedMode} onSelectMode={setSelectedMode} />
         </View>
 
         <ScrollView
           ref={contentScrollRef}
           style={styles.contentScroll}
           contentContainerStyle={styles.contentScrollContainer}
-          showsVerticalScrollIndicator={false}>
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.center}>
-            <RecordButton
-              status={recordButtonStatus}
-              onPress={handleRecordButtonPress}
-            />
+            <RecordButton status={recordButtonStatus} onPress={handleRecordButtonPress} />
 
             <View style={styles.hintRow}>
-              {isProcessing ? (
-                <ActivityIndicator
-                  size="small"
-                  color={colors.accent}
-                  style={styles.spinner}
-                />
-              ) : null}
+              {isProcessing ? <ActivityIndicator size="small" color={colors.accent} style={styles.spinner} /> : null}
 
-              <Text style={styles.hint}>
-                {texts.home.recordButton.hint[recordButtonStatus]}
-              </Text>
+              <Text style={styles.hint}>{texts.home.recordButton.hint[recordButtonStatus]}</Text>
             </View>
 
-            {errorMessage ? (
-              <Text style={styles.errorText}>{errorMessage}</Text>
-            ) : null}
+            {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
           </View>
 
           <View style={styles.recognizedSpeechCard}>
-            <Text style={styles.recognizedSpeechTitle}>
-              {texts.home.recognizedSpeech.title}
-            </Text>
+            <Text style={styles.recognizedSpeechTitle}>{texts.home.recognizedSpeech.title}</Text>
 
             <View style={styles.recognizedSpeechBlock}>
               <Text
                 style={[
                   styles.recognizedSpeechLabel,
-                  isListening
-                    ? styles.recognizedSpeechLabelActive
-                    : styles.recognizedSpeechLabelFinal,
-                ]}>
+                  isListening ? styles.recognizedSpeechLabelActive : styles.recognizedSpeechLabelFinal,
+                ]}
+              >
                 {recognizedSpeechLabel}
               </Text>
 
@@ -163,15 +134,20 @@ export function HomeScreen(): React.JSX.Element {
                   showsVerticalScrollIndicator
                   nestedScrollEnabled
                   onContentSizeChange={handleRecognizedSpeechContentSizeChange}
-                  contentContainerStyle={styles.recognizedSpeechScrollContent}>
-                  <Text
-                    style={[
-                      styles.recognizedSpeechValue,
-                      isRecognizedSpeechEmpty &&
-                      styles.recognizedSpeechValueEmpty,
-                    ]}>
-                    {recognizedSpeechValue}
-                  </Text>
+                  contentContainerStyle={styles.recognizedSpeechScrollContent}
+                >
+                  {isRecognizedSpeechEmpty ? (
+                    <Text style={[styles.recognizedSpeechValue, styles.recognizedSpeechValueEmpty]}>
+                      {recognizedSpeechValue}
+                    </Text>
+                  ) : isListening ? (
+                    <Text style={styles.recognizedSpeechValue}>
+                      <Text>{leadingText}</Text>
+                      <Text style={styles.recognizedSpeechValueHighlighted}>{highlightedText}</Text>
+                    </Text>
+                  ) : (
+                    <Text style={styles.recognizedSpeechValue}>{recognizedSpeechValue}</Text>
+                  )}
                 </ScrollView>
               </View>
             </View>
@@ -180,27 +156,16 @@ export function HomeScreen(): React.JSX.Element {
           <View style={styles.resultCard} onLayout={handlePreviewCardLayout}>
             <Text style={styles.resultLabel}>{texts.home.previewLabel}</Text>
 
-            <Text
-              style={[
-                styles.resultSource,
-                !hasResolvedContent && styles.resultSourcePlaceholder,
-              ]}>
+            <Text style={[styles.resultSource, !hasResolvedContent && styles.resultSourcePlaceholder]}>
               {previewContent.source}
             </Text>
 
             {shouldShowEnglish ? (
-              <TranslationPreviewBlock
-                label={texts.home.previewEnglishLabel}
-                value={previewContent.targetEn}
-              />
+              <TranslationPreviewBlock label={texts.home.previewEnglishLabel} value={previewContent.targetEn} />
             ) : null}
 
             {shouldShowHebrew ? (
-              <TranslationPreviewBlock
-                label={texts.home.previewHebrewLabel}
-                value={previewContent.targetHe}
-                isRtl
-              />
+              <TranslationPreviewBlock label={texts.home.previewHebrewLabel} value={previewContent.targetHe} isRtl />
             ) : null}
           </View>
         </ScrollView>
@@ -311,6 +276,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     color: colors.textPrimary,
+  },
+  recognizedSpeechValueHighlighted: {
+    color: colors.accentHighlighted,
+    fontWeight: '600',
   },
   recognizedSpeechValueEmpty: {
     color: colors.textMuted,
