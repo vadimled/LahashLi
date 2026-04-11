@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { useRecordButtonState } from '../../shared/hooks/useRecordButtonState';
 import { useTranslationMode } from '../../shared/hooks/useTranslationMode';
@@ -11,11 +11,26 @@ import { colors } from '../../theme/colors';
 import { previewContentByMode } from '../../utils/previewContent';
 import { texts } from '../../utils/texts';
 
-export function HomeScreen() {
+export function HomeScreen(): React.JSX.Element {
   const { selectedMode, setSelectedMode } = useTranslationMode();
   const { recordButtonStatus, handleRecordButtonPress } = useRecordButtonState();
 
-  const previewContent = previewContentByMode[selectedMode];
+  const isProcessing = recordButtonStatus === 'processing';
+  const isListening = recordButtonStatus === 'listening';
+
+  const basePreviewContent = previewContentByMode[selectedMode];
+
+  const previewContent = (() => {
+    if (isListening) {
+      return texts.home.previewState.listening;
+    }
+
+    if (isProcessing) {
+      return texts.home.previewState.processing;
+    }
+
+    return basePreviewContent;
+  })();
 
   return (
     <Screen>
@@ -29,12 +44,25 @@ export function HomeScreen() {
       <View style={styles.center}>
         <RecordButton status={recordButtonStatus} onPress={handleRecordButtonPress} />
 
-        <Text style={styles.hint}>{texts.home.recordButton.hint[recordButtonStatus]}</Text>
+        <View style={styles.hintRow}>
+          {isProcessing ? (
+            <ActivityIndicator size="small" color={colors.accent} style={styles.spinner} />
+          ) : null}
+
+          <Text style={styles.hint}>{texts.home.recordButton.hint[recordButtonStatus]}</Text>
+        </View>
       </View>
 
       <View style={styles.resultCard}>
         <Text style={styles.resultLabel}>{texts.home.previewLabel}</Text>
-        <Text style={styles.resultSource}>{previewContent.source}</Text>
+        <Text
+          style={[
+            styles.resultSource,
+            recordButtonStatus !== 'idle' && styles.resultSourcePlaceholder,
+          ]}
+        >
+          {previewContent.source}
+        </Text>
 
         <TranslationPreviewBlock
           label={texts.home.previewEnglishLabel}
@@ -69,13 +97,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  hint: {
+  hintRow: {
+    minHeight: 24,
     marginTop: 20,
+    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  spinner: {
+    marginRight: 8,
+  },
+  hint: {
     fontSize: 15,
     lineHeight: 22,
     textAlign: 'center',
     color: colors.textSecondary,
-    paddingHorizontal: 24,
+    flexShrink: 1,
   },
   resultCard: {
     backgroundColor: colors.surface,
@@ -93,5 +131,8 @@ const styles = StyleSheet.create({
   resultSource: {
     fontSize: 16,
     color: colors.textSecondary,
+  },
+  resultSourcePlaceholder: {
+    color: colors.textMuted,
   },
 });

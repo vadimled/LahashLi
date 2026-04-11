@@ -19,5 +19,17 @@ export const texts = {
         processing: 'Preparing translation...',
       },
     },
+    previewState: {
+      listening: {
+        source: 'Listening for your Russian phrase...',
+        targetEn: 'English translation will appear here.',
+        targetHe: 'Hebrew translation will appear here.',
+      },
+      processing: {
+        source: 'Preparing your translation...',
+        targetEn: 'Generating English reply...',
+        targetHe: 'Generating Hebrew reply...',
+      },
+    },
   },
 } as const;
