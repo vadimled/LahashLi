@@ -106,6 +106,7 @@ export function HomeScreen(): React.JSX.Element {
           <RecordButton
             status={recordButtonStatus}
             onPress={() => {
+              // eslint-disable-next-line no-void
               void handleRecordButtonPress();
             }}
           />

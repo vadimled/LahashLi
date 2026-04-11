@@ -154,6 +154,7 @@ export function useVoiceFlow(
     waitingForFinalResultRef.current = false;
     clearFinalResultTimeout();
 
+    // eslint-disable-next-line no-void
     void translateFinalTranscript(liveTranscript);
   }, [
     clearFinalResultTimeout,
