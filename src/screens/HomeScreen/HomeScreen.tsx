@@ -1,6 +1,15 @@
 import Clipboard from '@react-native-clipboard/clipboard';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, LayoutChangeEvent, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  LayoutChangeEvent,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { UITextView } from 'react-native-uitextview';
 
 import { useTranslationMode } from '../../shared/hooks/useTranslationMode';
 import { useVoiceFlow } from '../../shared/hooks/useVoiceFlow';
@@ -29,23 +38,25 @@ type TranslationCardProps = {
 };
 
 function TranslationCard({
-  languageLabel,
-  variantLabel,
-  value,
-  placeholder,
-  isRtl = false,
-  variant,
-  onCopy,
-  isCopied,
-  isCopyDisabled,
-}: TranslationCardProps): React.JSX.Element {
+                           languageLabel,
+                           variantLabel,
+                           value,
+                           placeholder,
+                           isRtl = false,
+                           variant,
+                           onCopy,
+                           isCopied,
+                           isCopyDisabled,
+                         }: TranslationCardProps): React.JSX.Element {
   const isEmpty = !value;
 
   return (
     <View
       style={[
         styles.translationCard,
-        variant === 'formal' ? styles.translationCardFormal : styles.translationCardCasual,
+        variant === 'formal'
+          ? styles.translationCardFormal
+          : styles.translationCardCasual,
       ]}
     >
       <View style={styles.translationCardHeader}>
@@ -54,7 +65,9 @@ function TranslationCard({
           <Text
             style={[
               styles.translationVariantBadge,
-              variant === 'formal' ? styles.translationVariantBadgeFormal : styles.translationVariantBadgeCasual,
+              variant === 'formal'
+                ? styles.translationVariantBadgeFormal
+                : styles.translationVariantBadgeCasual,
             ]}
           >
             {variantLabel}
@@ -78,20 +91,35 @@ function TranslationCard({
               isCopyDisabled && styles.copyButtonTextDisabled,
             ]}
           >
-            {isCopied ? texts.home.copyButton.success : texts.home.copyButton.idle}
+            {isCopied
+              ? texts.home.copyButton.success
+              : texts.home.copyButton.idle}
           </Text>
         </Pressable>
       </View>
 
-      <Text
-        style={[
-          styles.translationValue,
-          isEmpty && styles.translationValuePlaceholder,
-          isRtl ? styles.translationValueRtl : styles.translationValueLtr,
-        ]}
-      >
-        {value || placeholder}
-      </Text>
+      {isEmpty ? (
+        <Text
+          style={[
+            styles.translationValue,
+            styles.translationValuePlaceholder,
+            isRtl ? styles.translationValueRtl : styles.translationValueLtr,
+          ]}
+        >
+          {placeholder}
+        </Text>
+      ) : (
+        <UITextView
+          selectable
+          uiTextView
+          style={[
+            styles.translationValue,
+            isRtl ? styles.translationValueRtl : styles.translationValueLtr,
+          ]}
+        >
+          {value}
+        </UITextView>
+      )}
     </View>
   );
 }
@@ -115,13 +143,17 @@ export function HomeScreen(): React.JSX.Element {
   const recognizedSpeechScrollRef = useRef<ScrollView | null>(null);
   const translationsSectionYRef = useRef(0);
   const wasListeningRef = useRef(false);
-  const copiedResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copiedResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const isListening = recordButtonStatus === 'listening';
   const isProcessing = recordButtonStatus === 'processing';
 
-  const shouldShowEnglish = selectedMode === 'ruToEn' || selectedMode === 'ruToEnHe';
-  const shouldShowHebrew = selectedMode === 'ruToHe' || selectedMode === 'ruToEnHe';
+  const shouldShowEnglish =
+    selectedMode === 'ruToEn' || selectedMode === 'ruToEnHe';
+  const shouldShowHebrew =
+    selectedMode === 'ruToHe' || selectedMode === 'ruToEnHe';
 
   const recognizedSpeechLabel = isListening
     ? texts.home.recognizedSpeech.liveLabel
@@ -133,7 +165,9 @@ export function HomeScreen(): React.JSX.Element {
 
   const isRecognizedSpeechEmpty = isListening ? !liveTranscript : !transcript;
 
-  const { leadingText, highlightedText } = getHighlightedRecognizedSpeech(liveTranscript ?? '');
+  const { leadingText, highlightedText } = getHighlightedRecognizedSpeech(
+    liveTranscript ?? '',
+  );
 
   const handleRecognizedSpeechContentSizeChange = useCallback(() => {
     if (!isListening) {
@@ -143,9 +177,12 @@ export function HomeScreen(): React.JSX.Element {
     recognizedSpeechScrollRef.current?.scrollToEnd({ animated: true });
   }, [isListening]);
 
-  const handleTranslationsSectionLayout = useCallback((event: LayoutChangeEvent) => {
-    translationsSectionYRef.current = event.nativeEvent.layout.y;
-  }, []);
+  const handleTranslationsSectionLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      translationsSectionYRef.current = event.nativeEvent.layout.y;
+    },
+    [],
+  );
 
   const onPressRecordButton = useCallback((): void => {
     handleRecordButtonPress().catch(error => {
@@ -181,7 +218,10 @@ export function HomeScreen(): React.JSX.Element {
         });
 
         contentScrollRef.current?.scrollTo({
-          y: Math.max(0, translationsSectionYRef.current - TRANSLATIONS_SCROLL_TOP_OFFSET),
+          y: Math.max(
+            0,
+            translationsSectionYRef.current - TRANSLATIONS_SCROLL_TOP_OFFSET,
+          ),
           animated: true,
         });
       });
@@ -199,7 +239,12 @@ export function HomeScreen(): React.JSX.Element {
   }, []);
 
   const hasAnyTranslation = useMemo(() => {
-    return Boolean(translationEn?.formal || translationEn?.casual || translationHe?.formal || translationHe?.casual);
+    return Boolean(
+      translationEn?.formal ||
+      translationEn?.casual ||
+      translationHe?.formal ||
+      translationHe?.casual,
+    );
   }, [translationEn, translationHe]);
 
   return (
@@ -210,7 +255,10 @@ export function HomeScreen(): React.JSX.Element {
           <Text style={styles.subtitle}>{texts.app.subtitle}</Text>
         </View>
 
-        <ModeSelector selectedMode={selectedMode} onSelectMode={setSelectedMode} />
+        <ModeSelector
+          selectedMode={selectedMode}
+          onSelectMode={setSelectedMode}
+        />
       </View>
 
       <ScrollView
@@ -220,25 +268,42 @@ export function HomeScreen(): React.JSX.Element {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.center}>
-          <RecordButton status={recordButtonStatus} onPress={onPressRecordButton} />
+          <RecordButton
+            status={recordButtonStatus}
+            onPress={onPressRecordButton}
+          />
 
           <View style={styles.hintRow}>
-            {isProcessing ? <ActivityIndicator size="small" color={colors.accent} style={styles.spinner} /> : null}
+            {isProcessing ? (
+              <ActivityIndicator
+                size="small"
+                color={colors.accent}
+                style={styles.spinner}
+              />
+            ) : null}
 
-            <Text style={styles.hint}>{texts.home.recordButton.hint[recordButtonStatus]}</Text>
+            <Text style={styles.hint}>
+              {texts.home.recordButton.hint[recordButtonStatus]}
+            </Text>
           </View>
 
-          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+          {errorMessage ? (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          ) : null}
         </View>
 
         <View style={styles.recognizedSpeechCard}>
-          <Text style={styles.recognizedSpeechTitle}>{texts.home.recognizedSpeech.title}</Text>
+          <Text style={styles.recognizedSpeechTitle}>
+            {texts.home.recognizedSpeech.title}
+          </Text>
 
           <View style={styles.recognizedSpeechBlock}>
             <Text
               style={[
                 styles.recognizedSpeechLabel,
-                isListening ? styles.recognizedSpeechLabelActive : styles.recognizedSpeechLabelFinal,
+                isListening
+                  ? styles.recognizedSpeechLabelActive
+                  : styles.recognizedSpeechLabelFinal,
               ]}
             >
               {recognizedSpeechLabel}
@@ -252,16 +317,29 @@ export function HomeScreen(): React.JSX.Element {
                 contentContainerStyle={styles.recognizedSpeechScrollContent}
               >
                 {isRecognizedSpeechEmpty ? (
-                  <Text style={[styles.recognizedSpeechValue, styles.recognizedSpeechValueEmpty]}>
+                  <Text
+                    style={[
+                      styles.recognizedSpeechValue,
+                      styles.recognizedSpeechValueEmpty,
+                    ]}
+                  >
                     {recognizedSpeechValue}
                   </Text>
                 ) : isListening ? (
                   <Text style={styles.recognizedSpeechValue}>
                     {leadingText}
-                    <Text style={styles.recognizedSpeechValueHighlighted}>{highlightedText}</Text>
+                    <Text style={styles.recognizedSpeechValueHighlighted}>
+                      {highlightedText}
+                    </Text>
                   </Text>
                 ) : (
-                  <Text style={styles.recognizedSpeechValue}>{recognizedSpeechValue}</Text>
+                  <UITextView
+                    selectable
+                    uiTextView
+                    style={styles.recognizedSpeechValue}
+                  >
+                    {recognizedSpeechValue}
+                  </UITextView>
                 )}
               </ScrollView>
             </View>
@@ -269,8 +347,13 @@ export function HomeScreen(): React.JSX.Element {
         </View>
 
         {shouldShowEnglish || shouldShowHebrew ? (
-          <View style={styles.translationsSection} onLayout={handleTranslationsSectionLayout}>
-            <Text style={styles.translationsSectionTitle}>{texts.home.translationsLabel}</Text>
+          <View
+            style={styles.translationsSection}
+            onLayout={handleTranslationsSectionLayout}
+          >
+            <Text style={styles.translationsSectionTitle}>
+              {texts.home.translationsLabel}
+            </Text>
 
             {shouldShowEnglish ? (
               <>
@@ -445,6 +528,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     color: colors.textPrimary,
+    padding: 0,
+    margin: 0,
   },
   recognizedSpeechValueHighlighted: {
     color: colors.accent,
@@ -551,6 +636,8 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     fontWeight: '600',
     color: colors.textPrimary,
+    padding: 0,
+    margin: 0,
   },
   translationValuePlaceholder: {
     color: colors.textMuted,
