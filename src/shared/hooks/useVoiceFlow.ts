@@ -1,27 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  NativeEventEmitter,
-  NativeModules,
-  type EmitterSubscription,
-} from 'react-native';
+import { NativeEventEmitter, NativeModules, type EmitterSubscription } from 'react-native';
 import { useVoice } from 'react-native-voicekit';
 
 import { openAiConfig } from '../../utils/openAiConfig';
-import { translateWithOpenAi } from '../../utils/openAiTranslation';
+import { translateWithOpenAi, type TranslationVariant } from '../../utils/openAiTranslation';
 import { RecordButtonStatus } from '../../utils/recordButton';
 import { texts } from '../../utils/texts';
 import { TranslationMode } from '../../utils/translationModes';
-import {
-  mapVoiceErrorToMessage,
-  normalizeTranscript,
-  voiceRecognitionOptions,
-} from '../../utils/voiceRecognition';
+import { mapVoiceErrorToMessage, normalizeTranscript, voiceRecognitionOptions } from '../../utils/voiceRecognition';
 
 type VoiceFlowState = {
   status: RecordButtonStatus;
   transcript?: string;
-  translationEn?: string;
-  translationHe?: string;
+  translationEn?: TranslationVariant;
+  translationHe?: TranslationVariant;
   errorMessage?: string;
 };
 
@@ -29,25 +21,21 @@ type UseVoiceFlowReturn = {
   recordButtonStatus: RecordButtonStatus;
   transcript?: string;
   liveTranscript?: string;
-  translationEn?: string;
-  translationHe?: string;
+  translationEn?: TranslationVariant;
+  translationHe?: TranslationVariant;
   errorMessage?: string;
   handleRecordButtonPress: () => Promise<void>;
 };
 
 const FINAL_RESULT_TIMEOUT_MS = 1800;
 
-export function useVoiceFlow(
-  selectedMode: TranslationMode,
-): UseVoiceFlowReturn {
+export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn {
   const [voiceFlowState, setVoiceFlowState] = useState<VoiceFlowState>({
     status: 'idle',
   });
 
   const waitingForFinalResultRef = useRef(false);
-  const finalResultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
+  const finalResultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
     available,
@@ -71,7 +59,7 @@ export function useVoiceFlow(
   }, []);
 
   const translateFinalTranscript = useCallback(
-    async (finalTranscript: string) => {
+    async (finalTranscript: string): Promise<void> => {
       if (!openAiConfig.apiKey.trim()) {
         setVoiceFlowState({
           status: 'idle',
@@ -110,6 +98,21 @@ export function useVoiceFlow(
       }
     },
     [selectedMode],
+  );
+
+  const runTranslateFinalTranscript = useCallback(
+    (finalTranscript: string): void => {
+      translateFinalTranscript(finalTranscript).catch(() => {
+        setVoiceFlowState({
+          status: 'idle',
+          transcript: finalTranscript,
+          translationEn: undefined,
+          translationHe: undefined,
+          errorMessage: texts.home.recordButton.error.translationFailed,
+        });
+      });
+    },
+    [translateFinalTranscript],
   );
 
   useEffect(() => {
@@ -153,15 +156,8 @@ export function useVoiceFlow(
 
     waitingForFinalResultRef.current = false;
     clearFinalResultTimeout();
-
-    // eslint-disable-next-line no-void
-    void translateFinalTranscript(liveTranscript);
-  }, [
-    clearFinalResultTimeout,
-    listening,
-    liveTranscript,
-    translateFinalTranscript,
-  ]);
+    runTranslateFinalTranscript(liveTranscript);
+  }, [clearFinalResultTimeout, listening, liveTranscript, runTranslateFinalTranscript]);
 
   useEffect(() => {
     return () => {
@@ -179,8 +175,7 @@ export function useVoiceFlow(
         setVoiceFlowState(currentState => ({
           ...currentState,
           status: 'idle',
-          errorMessage:
-          texts.home.recordButton.error.speechRecognizerUnavailable,
+          errorMessage: texts.home.recordButton.error.speechRecognizerUnavailable,
         }));
         return;
       }
@@ -252,14 +247,7 @@ export function useVoiceFlow(
         }));
       }
     }
-  }, [
-    available,
-    clearFinalResultTimeout,
-    resetTranscript,
-    startListening,
-    stopListening,
-    voiceFlowState.status,
-  ]);
+  }, [available, clearFinalResultTimeout, resetTranscript, startListening, stopListening, voiceFlowState.status]);
 
   return {
     recordButtonStatus: voiceFlowState.status,

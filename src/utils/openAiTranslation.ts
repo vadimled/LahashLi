@@ -1,9 +1,14 @@
 import { TranslationMode } from './translationModes';
 
+export type TranslationVariant = {
+  formal: string;
+  casual: string;
+};
+
 export type OpenAiTranslationResult = {
   source: string;
-  translationEn?: string;
-  translationHe?: string;
+  translationEn?: TranslationVariant;
+  translationHe?: TranslationVariant;
 };
 
 type TranslateWithOpenAiParams = {
@@ -32,9 +37,11 @@ function buildInstructions(mode: TranslationMode): string {
       return [
         'You are a translation engine for a private mobile app.',
         'The user speaks Russian.',
-        'Translate the phrase into natural spoken English.',
+        'Return two English translations of the same phrase.',
+        'formal = polite, neutral, more official wording.',
+        'casual = natural, simple, conversational spoken wording.',
         'Return only strict JSON.',
-        'Schema: {"source":"string","translationEn":"string"}',
+        'Schema: {"source":"string","translationEn":{"formal":"string","casual":"string"}}',
         'Do not add markdown.',
         'Do not add explanations.',
       ].join(' ');
@@ -43,9 +50,11 @@ function buildInstructions(mode: TranslationMode): string {
       return [
         'You are a translation engine for a private mobile app.',
         'The user speaks Russian.',
-        'Translate the phrase into natural spoken Hebrew.',
+        'Return two Hebrew translations of the same phrase.',
+        'formal = polite, neutral, more official wording.',
+        'casual = natural, simple, conversational spoken wording.',
         'Return only strict JSON.',
-        'Schema: {"source":"string","translationHe":"string"}',
+        'Schema: {"source":"string","translationHe":{"formal":"string","casual":"string"}}',
         'Do not add markdown.',
         'Do not add explanations.',
       ].join(' ');
@@ -54,9 +63,12 @@ function buildInstructions(mode: TranslationMode): string {
       return [
         'You are a translation engine for a private mobile app.',
         'The user speaks Russian.',
-        'Translate the phrase into natural spoken English and natural spoken Hebrew.',
+        'Return two English translations and two Hebrew translations of the same phrase.',
+        'For each language:',
+        'formal = polite, neutral, more official wording.',
+        'casual = natural, simple, conversational spoken wording.',
         'Return only strict JSON.',
-        'Schema: {"source":"string","translationEn":"string","translationHe":"string"}',
+        'Schema: {"source":"string","translationEn":{"formal":"string","casual":"string"},"translationHe":{"formal":"string","casual":"string"}}',
         'Do not add markdown.',
         'Do not add explanations.',
       ].join(' ');
@@ -74,22 +86,41 @@ function extractOutputText(responseData: ResponsesApiResponse): string {
     .trim();
 }
 
-function parseTranslationResult(rawText: string, originalText: string): OpenAiTranslationResult {
+function normalizeVariant(
+  variant?: Partial<TranslationVariant>,
+): TranslationVariant | undefined {
+  const formal = variant?.formal?.trim();
+  const casual = variant?.casual?.trim();
+
+  if (!formal && !casual) {
+    return undefined;
+  }
+
+  return {
+    formal: formal ?? '',
+    casual: casual ?? '',
+  };
+}
+
+function parseTranslationResult(
+  rawText: string,
+  originalText: string,
+): OpenAiTranslationResult {
   const parsed = JSON.parse(rawText) as OpenAiTranslationResult;
 
   return {
     source: parsed.source?.trim() || originalText,
-    translationEn: parsed.translationEn?.trim(),
-    translationHe: parsed.translationHe?.trim(),
+    translationEn: normalizeVariant(parsed.translationEn),
+    translationHe: normalizeVariant(parsed.translationHe),
   };
 }
 
 export async function translateWithOpenAi({
-  text,
-  mode,
-  apiKey,
-  model,
-}: TranslateWithOpenAiParams): Promise<OpenAiTranslationResult> {
+                                            text,
+                                            mode,
+                                            apiKey,
+                                            model,
+                                          }: TranslateWithOpenAiParams): Promise<OpenAiTranslationResult> {
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
@@ -123,7 +154,9 @@ export async function translateWithOpenAi({
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`OpenAI request failed with status ${response.status}: ${errorText}`);
+    throw new Error(
+      `OpenAI request failed with status ${response.status}: ${errorText}`,
+    );
   }
 
   const responseData = (await response.json()) as ResponsesApiResponse;

@@ -4,9 +4,15 @@ export const texts = {
     subtitle: 'Personal voice translator',
   },
   home: {
-    previewLabel: 'Preview',
-    previewEnglishLabel: 'English',
-    previewHebrewLabel: 'Hebrew',
+    translationsLabel: 'Translations',
+    translationVariants: {
+      formal: 'Formal',
+      casual: 'Casual',
+    },
+    languageLabels: {
+      english: 'English',
+      hebrew: 'Hebrew',
+    },
     recognizedSpeech: {
       title: 'Recognized speech',
       liveLabel: 'Live',
@@ -37,52 +43,11 @@ export const texts = {
         translationFailed: 'Could not translate the phrase. Please try again.',
       },
     },
-    previewState: {
-      ruToEn: {
-        idle: {
-          source: 'Your Russian phrase will appear here.',
-          targetEn: 'English translation will appear here.',
-        },
-        listening: {
-          source: 'Listening for your Russian phrase...',
-          targetEn: 'English translation will appear here.',
-        },
-        processing: {
-          source: 'Preparing your translation...',
-          targetEn: 'Generating English reply...',
-        },
-      },
-      ruToHe: {
-        idle: {
-          source: 'Your Russian phrase will appear here.',
-          targetHe: 'התרגום לעברית יופיע כאן.',
-        },
-        listening: {
-          source: 'Listening for your Russian phrase...',
-          targetHe: 'התרגום לעברית יופיע כאן.',
-        },
-        processing: {
-          source: 'Preparing your translation...',
-          targetHe: 'מכין תשובה בעברית...',
-        },
-      },
-      ruToEnHe: {
-        idle: {
-          source: 'Your Russian phrase will appear here.',
-          targetEn: 'English translation will appear here.',
-          targetHe: 'התרגום לעברית יופיע כאן.',
-        },
-        listening: {
-          source: 'Listening for your Russian phrase...',
-          targetEn: 'English translation will appear here.',
-          targetHe: 'התרגום לעברית יופיע כאן.',
-        },
-        processing: {
-          source: 'Preparing your translation...',
-          targetEn: 'Generating English reply...',
-          targetHe: 'מכין תשובה בעברית...',
-        },
-      },
+    translationPlaceholders: {
+      englishFormal: 'Formal English translation will appear here.',
+      englishCasual: 'Casual English translation will appear here.',
+      hebrewFormal: 'התרגום הרשמי לעברית יופיע כאן.',
+      hebrewCasual: 'התרגום היומיומי לעברית יופיע כאן.',
     },
   },
 } as const;

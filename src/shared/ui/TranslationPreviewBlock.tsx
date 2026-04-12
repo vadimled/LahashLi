@@ -9,11 +9,7 @@ type TranslationPreviewBlockProps = {
   isRtl?: boolean;
 };
 
-export function TranslationPreviewBlock({
-  label,
-  value,
-  isRtl = false,
-}: TranslationPreviewBlockProps) {
+export function TranslationPreviewBlock({ label, value, isRtl = false }: TranslationPreviewBlockProps) {
   if (!value) {
     return null;
   }
@@ -21,21 +17,15 @@ export function TranslationPreviewBlock({
   return (
     <View style={styles.translationBlock}>
       <Text style={styles.translationLabel}>{label}</Text>
-      <Text
-        style={[
-          styles.resultTarget,
-          isRtl ? styles.resultTargetRtl : styles.resultTargetLtr,
-        ]}
-      >
-        {value}
-      </Text>
+      <Text style={[styles.resultTarget, isRtl ? styles.resultTargetRtl : styles.resultTargetLtr]}>{value}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   translationBlock: {
-    gap: 4,
+    gap: 6,
+    paddingVertical: 8,
   },
   translationLabel: {
     fontSize: 12,
@@ -44,7 +34,8 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   resultTarget: {
-    fontSize: 20,
+    fontSize: 18,
+    lineHeight: 26,
     fontWeight: '600',
     color: colors.textPrimary,
   },

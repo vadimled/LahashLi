@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { ActivityIndicator, LayoutChangeEvent, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useTranslationMode } from '../../shared/hooks/useTranslationMode';
@@ -6,14 +6,64 @@ import { useVoiceFlow } from '../../shared/hooks/useVoiceFlow';
 import { ModeSelector } from '../../shared/ui/ModeSelector';
 import { RecordButton } from '../../shared/ui/RecordButton';
 import { Screen } from '../../shared/ui/Screen';
-import { TranslationPreviewBlock } from '../../shared/ui/TranslationPreviewBlock';
 import { colors } from '../../theme/colors';
-import { getHighlightedRecognizedSpeech, getHomeScreenPreviewState } from '../../utils/helpers';
+import { getHighlightedRecognizedSpeech } from '../../utils/helpers';
 import { texts } from '../../utils/texts';
 
 const RECOGNIZED_SPEECH_CONTENT_HEIGHT = 116;
+const TRANSLATIONS_SCROLL_TOP_OFFSET = 12;
 const CONTENT_BOTTOM_PADDING = 32;
-const PREVIEW_SCROLL_TOP_OFFSET = 12;
+
+type TranslationCardProps = {
+  languageLabel: string;
+  variantLabel: string;
+  value?: string;
+  placeholder: string;
+  isRtl?: boolean;
+  variant: 'formal' | 'casual';
+};
+
+function TranslationCard({
+  languageLabel,
+  variantLabel,
+  value,
+  placeholder,
+  isRtl = false,
+  variant,
+}: TranslationCardProps): React.JSX.Element {
+  const isEmpty = !value;
+
+  return (
+    <View
+      style={[
+        styles.translationCard,
+        variant === 'formal' ? styles.translationCardFormal : styles.translationCardCasual,
+      ]}
+    >
+      <View style={styles.translationCardHeader}>
+        <Text style={styles.translationLanguageLabel}>{languageLabel}</Text>
+        <Text
+          style={[
+            styles.translationVariantBadge,
+            variant === 'formal' ? styles.translationVariantBadgeFormal : styles.translationVariantBadgeCasual,
+          ]}
+        >
+          {variantLabel}
+        </Text>
+      </View>
+
+      <Text
+        style={[
+          styles.translationValue,
+          isEmpty && styles.translationValuePlaceholder,
+          isRtl ? styles.translationValueRtl : styles.translationValueLtr,
+        ]}
+      >
+        {value || placeholder}
+      </Text>
+    </View>
+  );
+}
 
 export function HomeScreen(): React.JSX.Element {
   const { selectedMode, setSelectedMode } = useTranslationMode();
@@ -30,16 +80,14 @@ export function HomeScreen(): React.JSX.Element {
 
   const contentScrollRef = useRef<ScrollView | null>(null);
   const recognizedSpeechScrollRef = useRef<ScrollView | null>(null);
+  const translationsSectionYRef = useRef(0);
   const wasListeningRef = useRef(false);
-  const previewCardYRef = useRef(0);
 
-  const { previewContent, shouldShowEnglish, shouldShowHebrew, isListening, isProcessing } = getHomeScreenPreviewState({
-    selectedMode,
-    recordButtonStatus,
-    transcript,
-    translationEn,
-    translationHe,
-  });
+  const isListening = recordButtonStatus === 'listening';
+  const isProcessing = recordButtonStatus === 'processing';
+
+  const shouldShowEnglish = selectedMode === 'ruToEn' || selectedMode === 'ruToEnHe';
+  const shouldShowHebrew = selectedMode === 'ruToHe' || selectedMode === 'ruToEnHe';
 
   const recognizedSpeechLabel = isListening
     ? texts.home.recognizedSpeech.liveLabel
@@ -61,9 +109,15 @@ export function HomeScreen(): React.JSX.Element {
     recognizedSpeechScrollRef.current?.scrollToEnd({ animated: true });
   }, [isListening]);
 
-  const handlePreviewCardLayout = useCallback((event: LayoutChangeEvent) => {
-    previewCardYRef.current = event.nativeEvent.layout.y;
+  const handleTranslationsSectionLayout = useCallback((event: LayoutChangeEvent) => {
+    translationsSectionYRef.current = event.nativeEvent.layout.y;
   }, []);
+
+  const onPressRecordButton = useCallback((): void => {
+    handleRecordButtonPress().catch(error => {
+      console.error('handleRecordButtonPress failed', error);
+    });
+  }, [handleRecordButtonPress]);
 
   useEffect(() => {
     const hasSwitchedFromLiveToFinal = wasListeningRef.current && !isListening;
@@ -76,7 +130,7 @@ export function HomeScreen(): React.JSX.Element {
         });
 
         contentScrollRef.current?.scrollTo({
-          y: Math.max(0, previewCardYRef.current - PREVIEW_SCROLL_TOP_OFFSET),
+          y: Math.max(0, translationsSectionYRef.current - TRANSLATIONS_SCROLL_TOP_OFFSET),
           animated: true,
         });
       });
@@ -84,6 +138,10 @@ export function HomeScreen(): React.JSX.Element {
 
     wasListeningRef.current = isListening;
   }, [isListening, recognizedSpeechValue]);
+
+  const hasAnyTranslation = useMemo(() => {
+    return Boolean(translationEn?.formal || translationEn?.casual || translationHe?.formal || translationHe?.casual);
+  }, [translationEn, translationHe]);
 
   return (
     <Screen>
@@ -103,13 +161,7 @@ export function HomeScreen(): React.JSX.Element {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.center}>
-          <RecordButton
-            status={recordButtonStatus}
-            onPress={() => {
-              // eslint-disable-next-line no-void
-              void handleRecordButtonPress();
-            }}
-          />
+          <RecordButton status={recordButtonStatus} onPress={onPressRecordButton} />
 
           <View style={styles.hintRow}>
             {isProcessing ? <ActivityIndicator size="small" color={colors.accent} style={styles.spinner} /> : null}
@@ -146,7 +198,8 @@ export function HomeScreen(): React.JSX.Element {
                   </Text>
                 ) : isListening ? (
                   <Text style={styles.recognizedSpeechValue}>
-                    {leadingText} <Text style={styles.recognizedSpeechValueHighlighted}>{highlightedText}</Text>
+                    {leadingText}
+                    <Text style={styles.recognizedSpeechValueHighlighted}>{highlightedText}</Text>
                   </Text>
                 ) : (
                   <Text style={styles.recognizedSpeechValue}>{recognizedSpeechValue}</Text>
@@ -156,21 +209,59 @@ export function HomeScreen(): React.JSX.Element {
           </View>
         </View>
 
-        <View style={styles.resultCard} onLayout={handlePreviewCardLayout}>
-          <Text style={styles.resultLabel}>{texts.home.previewLabel}</Text>
+        {shouldShowEnglish || shouldShowHebrew ? (
+          <View style={styles.translationsSection} onLayout={handleTranslationsSectionLayout}>
+            <Text style={styles.translationsSectionTitle}>{texts.home.translationsLabel}</Text>
 
-          <Text style={[styles.resultSource, !transcript && styles.resultSourcePlaceholder]}>
-            {previewContent.source}
-          </Text>
+            {shouldShowEnglish ? (
+              <>
+                <TranslationCard
+                  languageLabel={texts.home.languageLabels.english}
+                  variantLabel={texts.home.translationVariants.formal}
+                  value={translationEn?.formal}
+                  placeholder={texts.home.translationPlaceholders.englishFormal}
+                  variant="formal"
+                />
+                <TranslationCard
+                  languageLabel={texts.home.languageLabels.english}
+                  variantLabel={texts.home.translationVariants.casual}
+                  value={translationEn?.casual}
+                  placeholder={texts.home.translationPlaceholders.englishCasual}
+                  variant="casual"
+                />
+              </>
+            ) : null}
 
-          {shouldShowEnglish ? (
-            <TranslationPreviewBlock label={texts.home.previewEnglishLabel} value={previewContent.targetEn} />
-          ) : null}
+            {shouldShowHebrew ? (
+              <>
+                <TranslationCard
+                  languageLabel={texts.home.languageLabels.hebrew}
+                  variantLabel={texts.home.translationVariants.formal}
+                  value={translationHe?.formal}
+                  placeholder={texts.home.translationPlaceholders.hebrewFormal}
+                  variant="formal"
+                  isRtl
+                />
+                <TranslationCard
+                  languageLabel={texts.home.languageLabels.hebrew}
+                  variantLabel={texts.home.translationVariants.casual}
+                  value={translationHe?.casual}
+                  placeholder={texts.home.translationPlaceholders.hebrewCasual}
+                  variant="casual"
+                  isRtl
+                />
+              </>
+            ) : null}
 
-          {shouldShowHebrew ? (
-            <TranslationPreviewBlock label={texts.home.previewHebrewLabel} value={previewContent.targetHe} isRtl />
-          ) : null}
-        </View>
+            {!hasAnyTranslation && !isProcessing ? (
+              <Text style={styles.translationsHint}>
+                {shouldShowEnglish && shouldShowHebrew
+                  ? 'Formal and casual translations will appear here.'
+                  : 'Translation variants will appear here.'}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
       </ScrollView>
     </Screen>
   );
@@ -277,13 +368,13 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   recognizedSpeechValueHighlighted: {
-    color: colors.accentHighlighted,
+    color: colors.accent,
     fontWeight: '600',
   },
   recognizedSpeechValueEmpty: {
     color: colors.textMuted,
   },
-  resultCard: {
+  translationsSection: {
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
@@ -291,16 +382,73 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
-  resultLabel: {
+  translationsSectionTitle: {
     fontSize: 12,
     color: colors.textSecondary,
     textTransform: 'uppercase',
   },
-  resultSource: {
-    fontSize: 16,
-    color: colors.textSecondary,
+  translationCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+    gap: 10,
   },
-  resultSourcePlaceholder: {
+  translationCardFormal: {
+    backgroundColor: colors.backgroundSecondary,
+    borderColor: colors.border,
+  },
+  translationCardCasual: {
+    backgroundColor: 'rgba(35, 207, 200, 0.08)',
+    borderColor: colors.accent,
+  },
+  translationCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  translationLanguageLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  translationVariantBadge: {
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  translationVariantBadgeFormal: {
+    color: colors.textSecondary,
+    backgroundColor: colors.surfaceSecondary,
+  },
+  translationVariantBadgeCasual: {
+    color: colors.background,
+    backgroundColor: colors.accent,
+  },
+  translationValue: {
+    fontSize: 18,
+    lineHeight: 26,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  translationValuePlaceholder: {
+    color: colors.textMuted,
+  },
+  translationValueLtr: {
+    writingDirection: 'ltr',
+    textAlign: 'left',
+  },
+  translationValueRtl: {
+    writingDirection: 'rtl',
+    textAlign: 'right',
+  },
+  translationsHint: {
+    marginTop: 4,
+    fontSize: 14,
+    lineHeight: 20,
     color: colors.textMuted,
   },
 });
