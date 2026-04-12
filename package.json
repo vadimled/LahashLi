@@ -13,6 +13,7 @@
     "clean:pods": "cd ios && rm -rf Pods Podfile.lock && pod install && cd .."
   },
   "dependencies": {
+    "@react-native-clipboard/clipboard": "^1.16.3",
     "@react-native/new-app-screen": "0.84.1",
     "@react-navigation/native": "7.1.31",
     "@react-navigation/native-stack": "7.14.2",

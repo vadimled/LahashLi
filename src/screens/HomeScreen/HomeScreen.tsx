@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { ActivityIndicator, LayoutChangeEvent, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, LayoutChangeEvent, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useTranslationMode } from '../../shared/hooks/useTranslationMode';
 import { useVoiceFlow } from '../../shared/hooks/useVoiceFlow';
@@ -13,6 +14,7 @@ import { texts } from '../../utils/texts';
 const RECOGNIZED_SPEECH_CONTENT_HEIGHT = 116;
 const TRANSLATIONS_SCROLL_TOP_OFFSET = 12;
 const CONTENT_BOTTOM_PADDING = 32;
+const COPY_SUCCESS_TIMEOUT_MS = 1500;
 
 type TranslationCardProps = {
   languageLabel: string;
@@ -21,6 +23,9 @@ type TranslationCardProps = {
   placeholder: string;
   isRtl?: boolean;
   variant: 'formal' | 'casual';
+  onCopy: () => void;
+  isCopied: boolean;
+  isCopyDisabled: boolean;
 };
 
 function TranslationCard({
@@ -30,6 +35,9 @@ function TranslationCard({
   placeholder,
   isRtl = false,
   variant,
+  onCopy,
+  isCopied,
+  isCopyDisabled,
 }: TranslationCardProps): React.JSX.Element {
   const isEmpty = !value;
 
@@ -41,15 +49,38 @@ function TranslationCard({
       ]}
     >
       <View style={styles.translationCardHeader}>
-        <Text style={styles.translationLanguageLabel}>{languageLabel}</Text>
-        <Text
-          style={[
-            styles.translationVariantBadge,
-            variant === 'formal' ? styles.translationVariantBadgeFormal : styles.translationVariantBadgeCasual,
+        <View style={styles.translationCardHeaderLeft}>
+          <Text style={styles.translationLanguageLabel}>{languageLabel}</Text>
+          <Text
+            style={[
+              styles.translationVariantBadge,
+              variant === 'formal' ? styles.translationVariantBadgeFormal : styles.translationVariantBadgeCasual,
+            ]}
+          >
+            {variantLabel}
+          </Text>
+        </View>
+
+        <Pressable
+          onPress={onCopy}
+          disabled={isCopyDisabled}
+          style={({ pressed }) => [
+            styles.copyButton,
+            isCopied && styles.copyButtonSuccess,
+            isCopyDisabled && styles.copyButtonDisabled,
+            pressed && !isCopyDisabled && styles.copyButtonPressed,
           ]}
         >
-          {variantLabel}
-        </Text>
+          <Text
+            style={[
+              styles.copyButtonText,
+              isCopied && styles.copyButtonTextSuccess,
+              isCopyDisabled && styles.copyButtonTextDisabled,
+            ]}
+          >
+            {isCopied ? texts.home.copyButton.success : texts.home.copyButton.idle}
+          </Text>
+        </Pressable>
       </View>
 
       <Text
@@ -78,10 +109,13 @@ export function HomeScreen(): React.JSX.Element {
     handleRecordButtonPress,
   } = useVoiceFlow(selectedMode);
 
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
   const contentScrollRef = useRef<ScrollView | null>(null);
   const recognizedSpeechScrollRef = useRef<ScrollView | null>(null);
   const translationsSectionYRef = useRef(0);
   const wasListeningRef = useRef(false);
+  const copiedResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isListening = recordButtonStatus === 'listening';
   const isProcessing = recordButtonStatus === 'processing';
@@ -119,6 +153,23 @@ export function HomeScreen(): React.JSX.Element {
     });
   }, [handleRecordButtonPress]);
 
+  const handleCopy = useCallback((key: string, value?: string): void => {
+    if (!value) {
+      return;
+    }
+
+    Clipboard.setString(value);
+    setCopiedKey(key);
+
+    if (copiedResetTimeoutRef.current) {
+      clearTimeout(copiedResetTimeoutRef.current);
+    }
+
+    copiedResetTimeoutRef.current = setTimeout(() => {
+      setCopiedKey(currentKey => (currentKey === key ? null : currentKey));
+    }, COPY_SUCCESS_TIMEOUT_MS);
+  }, []);
+
   useEffect(() => {
     const hasSwitchedFromLiveToFinal = wasListeningRef.current && !isListening;
 
@@ -138,6 +189,14 @@ export function HomeScreen(): React.JSX.Element {
 
     wasListeningRef.current = isListening;
   }, [isListening, recognizedSpeechValue]);
+
+  useEffect(() => {
+    return () => {
+      if (copiedResetTimeoutRef.current) {
+        clearTimeout(copiedResetTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const hasAnyTranslation = useMemo(() => {
     return Boolean(translationEn?.formal || translationEn?.casual || translationHe?.formal || translationHe?.casual);
@@ -221,6 +280,11 @@ export function HomeScreen(): React.JSX.Element {
                   value={translationEn?.formal}
                   placeholder={texts.home.translationPlaceholders.englishFormal}
                   variant="formal"
+                  onCopy={() => {
+                    handleCopy('english-formal', translationEn?.formal);
+                  }}
+                  isCopied={copiedKey === 'english-formal'}
+                  isCopyDisabled={!translationEn?.formal}
                 />
                 <TranslationCard
                   languageLabel={texts.home.languageLabels.english}
@@ -228,6 +292,11 @@ export function HomeScreen(): React.JSX.Element {
                   value={translationEn?.casual}
                   placeholder={texts.home.translationPlaceholders.englishCasual}
                   variant="casual"
+                  onCopy={() => {
+                    handleCopy('english-casual', translationEn?.casual);
+                  }}
+                  isCopied={copiedKey === 'english-casual'}
+                  isCopyDisabled={!translationEn?.casual}
                 />
               </>
             ) : null}
@@ -241,6 +310,11 @@ export function HomeScreen(): React.JSX.Element {
                   placeholder={texts.home.translationPlaceholders.hebrewFormal}
                   variant="formal"
                   isRtl
+                  onCopy={() => {
+                    handleCopy('hebrew-formal', translationHe?.formal);
+                  }}
+                  isCopied={copiedKey === 'hebrew-formal'}
+                  isCopyDisabled={!translationHe?.formal}
                 />
                 <TranslationCard
                   languageLabel={texts.home.languageLabels.hebrew}
@@ -249,6 +323,11 @@ export function HomeScreen(): React.JSX.Element {
                   placeholder={texts.home.translationPlaceholders.hebrewCasual}
                   variant="casual"
                   isRtl
+                  onCopy={() => {
+                    handleCopy('hebrew-casual', translationHe?.casual);
+                  }}
+                  isCopied={copiedKey === 'hebrew-casual'}
+                  isCopyDisabled={!translationHe?.casual}
                 />
               </>
             ) : null}
@@ -405,6 +484,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 12,
+  },
+  translationCardHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 1,
   },
   translationLanguageLabel: {
     fontSize: 13,
@@ -427,6 +513,38 @@ const styles = StyleSheet.create({
   translationVariantBadgeCasual: {
     color: colors.background,
     backgroundColor: colors.accent,
+  },
+  copyButton: {
+    minWidth: 68,
+    height: 32,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.backgroundSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  copyButtonPressed: {
+    opacity: 0.8,
+  },
+  copyButtonDisabled: {
+    opacity: 0.45,
+  },
+  copyButtonSuccess: {
+    borderColor: colors.accent,
+    backgroundColor: 'rgba(35, 207, 200, 0.14)',
+  },
+  copyButtonText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
+  copyButtonTextDisabled: {
+    color: colors.textMuted,
+  },
+  copyButtonTextSuccess: {
+    color: colors.accent,
   },
   translationValue: {
     fontSize: 18,
