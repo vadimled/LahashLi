@@ -96,6 +96,14 @@ export function HomeScreen(): React.JSX.Element {
   }, []);
 
   useEffect(() => {
+    setCopiedKey(null);
+
+    if (copiedResetTimeoutRef.current) {
+      clearTimeout(copiedResetTimeoutRef.current);
+    }
+  }, [selectedMode]);
+
+  useEffect(() => {
     const hasSwitchedFromLiveToFinal = wasListeningRef.current && !isListening;
 
     if (hasSwitchedFromLiveToFinal) {
@@ -132,8 +140,6 @@ export function HomeScreen(): React.JSX.Element {
       <View style={styles.fixedTopSection}>
         <Header recordButtonStatus={recordButtonStatus} onPressRecordButton={onPressRecordButton} />
 
-        <ModeSelector selectedMode={selectedMode} onSelectMode={setSelectedMode} />
-
         <View style={styles.hintRow}>
           {isProcessing ? <ActivityIndicator size="small" color={colors.textSecondary} style={styles.spinner} /> : null}
 
@@ -141,6 +147,8 @@ export function HomeScreen(): React.JSX.Element {
         </View>
 
         {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+
+        <ModeSelector selectedMode={selectedMode} onSelectMode={setSelectedMode} />
       </View>
 
       <ScrollView

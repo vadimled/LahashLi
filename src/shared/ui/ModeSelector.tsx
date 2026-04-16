@@ -48,7 +48,6 @@ export function ModeSelector({
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 24,
     flexDirection: 'row',
     backgroundColor: colors.surface,
     borderWidth: 1,

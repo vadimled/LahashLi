@@ -143,6 +143,18 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
     };
   }, [clearFinalResultTimeout]);
 
+  useEffect(() => {
+    setVoiceFlowState({
+      status: 'idle',
+      transcript: undefined,
+      translationEn: undefined,
+      translationHe: undefined,
+      errorMessage: undefined,
+    });
+    waitingForFinalResultRef.current = false;
+    clearFinalResultTimeout();
+  }, [selectedMode, clearFinalResultTimeout]);
+
   const handleRecordButtonPress = useCallback(async (): Promise<void> => {
     if (voiceFlowState.status === 'processing') {
       return;
