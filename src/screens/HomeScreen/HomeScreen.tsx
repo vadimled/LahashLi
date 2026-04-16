@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, LayoutChangeEvent, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { UITextView } from 'react-native-uitextview';
 
+import { TranslationMode } from '../../utils/translationModes';
 import { useTranslationMode } from '../../shared/hooks/useTranslationMode';
 import { useVoiceFlow } from '../../shared/hooks/useVoiceFlow';
 import { Header } from '../../shared/ui/Header';
@@ -43,8 +44,8 @@ export function HomeScreen(): React.JSX.Element {
   const isListening = recordButtonStatus === 'listening';
   const isProcessing = recordButtonStatus === 'processing';
 
-  const shouldShowEnglish = selectedMode === 'ruToEn' || selectedMode === 'ruToEnHe';
-  const shouldShowHebrew = selectedMode === 'ruToHe' || selectedMode === 'ruToEnHe';
+  const shouldShowEnglish = selectedMode === TranslationMode.RuToEn || selectedMode === TranslationMode.RuToEnHe;
+  const shouldShowHebrew = selectedMode === TranslationMode.RuToHe || selectedMode === TranslationMode.RuToEnHe;
 
   const recognizedSpeechLabel = isListening
     ? texts.home.recognizedSpeech.liveLabel

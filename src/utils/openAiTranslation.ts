@@ -40,7 +40,7 @@ type JsonSchema = {
 
 function buildInstructions(mode: TranslationMode): string {
   switch (mode) {
-    case 'ruToEn':
+    case TranslationMode.RuToEn:
       return [
         'You are a translation engine for a private mobile app.',
         'The user provides a Russian phrase.',
@@ -54,7 +54,7 @@ function buildInstructions(mode: TranslationMode): string {
         'Do not add explanations.',
       ].join(' ');
 
-    case 'ruToHe':
+    case TranslationMode.RuToHe:
       return [
         'You are a translation engine for a private mobile app.',
         'The user provides a Russian phrase.',
@@ -69,7 +69,7 @@ function buildInstructions(mode: TranslationMode): string {
         'Do not add explanations.',
       ].join(' ');
 
-    case 'ruToEnHe':
+    case TranslationMode.RuToEnHe:
       return [
         'You are a translation engine for a private mobile app.',
         'The user provides a Russian phrase.',
@@ -106,7 +106,7 @@ function createVariantSchema(descriptionPrefix: string): JsonSchema {
 
 function getSchemaForMode(mode: TranslationMode): JsonSchema {
   switch (mode) {
-    case 'ruToEn':
+    case TranslationMode.RuToEn:
       return {
         type: 'object',
         properties: {
@@ -120,7 +120,7 @@ function getSchemaForMode(mode: TranslationMode): JsonSchema {
         additionalProperties: false,
       };
 
-    case 'ruToHe':
+    case TranslationMode.RuToHe:
       return {
         type: 'object',
         properties: {
@@ -134,7 +134,7 @@ function getSchemaForMode(mode: TranslationMode): JsonSchema {
         additionalProperties: false,
       };
 
-    case 'ruToEnHe':
+    case TranslationMode.RuToEnHe:
       return {
         type: 'object',
         properties: {
@@ -200,15 +200,15 @@ function validateResult(result: OpenAiTranslationResult, mode: TranslationMode):
     throw new Error('OpenAI response is missing "source"');
   }
 
-  if (mode === 'ruToEn' && !result.translationEn) {
+  if (mode === TranslationMode.RuToEn && !result.translationEn) {
     throw new Error('OpenAI response is missing "translationEn"');
   }
 
-  if (mode === 'ruToHe' && !result.translationHe) {
+  if (mode === TranslationMode.RuToHe && !result.translationHe) {
     throw new Error('OpenAI response is missing "translationHe"');
   }
 
-  if (mode === 'ruToEnHe' && (!result.translationEn || !result.translationHe)) {
+  if (mode === TranslationMode.RuToEnHe && (!result.translationEn || !result.translationHe)) {
     throw new Error('OpenAI response is missing "translationEn" or "translationHe"');
   }
 }

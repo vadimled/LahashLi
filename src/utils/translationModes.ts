@@ -1,4 +1,8 @@
-export type TranslationMode = 'ruToEn' | 'ruToHe' | 'ruToEnHe';
+export enum TranslationMode {
+  RuToEn = 'ruToEn',
+  RuToHe = 'ruToHe',
+  RuToEnHe = 'ruToEnHe',
+}
 
 export type TranslationModeOption = {
   id: TranslationMode;
@@ -7,15 +11,15 @@ export type TranslationModeOption = {
 
 export const translationModeOptions: TranslationModeOption[] = [
   {
-    id: 'ruToEn',
+    id: TranslationMode.RuToEn,
     label: 'RU → EN',
   },
   {
-    id: 'ruToHe',
+    id: TranslationMode.RuToHe,
     label: 'RU → HE',
   },
   {
-    id: 'ruToEnHe',
+    id: TranslationMode.RuToEnHe,
     label: 'RU → EN + HE',
   },
 ];
