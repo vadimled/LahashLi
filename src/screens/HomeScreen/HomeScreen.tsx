@@ -5,7 +5,7 @@ import { UITextView } from 'react-native-uitextview';
 
 import { useTranslationMode } from '../../shared/hooks/useTranslationMode';
 import { useVoiceFlow } from '../../shared/hooks/useVoiceFlow';
-import { Header } from '../../shared/ui/Header.tsx';
+import { Header } from '../../shared/ui/Header';
 import { ModeSelector } from '../../shared/ui/ModeSelector';
 import { Screen } from '../../shared/ui/Screen';
 import { TranslationCard } from '../../shared/ui/TranslationCard';
@@ -196,7 +196,6 @@ export function HomeScreen(): React.JSX.Element {
                   variantLabel={texts.home.translationVariants.formal}
                   value={translationEn?.formal}
                   placeholder={texts.home.translationPlaceholders.englishFormal}
-                  variant="formal"
                   onCopy={() => {
                     handleCopy('english-formal', translationEn?.formal);
                   }}
@@ -209,7 +208,6 @@ export function HomeScreen(): React.JSX.Element {
                   variantLabel={texts.home.translationVariants.casual}
                   value={translationEn?.casual}
                   placeholder={texts.home.translationPlaceholders.englishCasual}
-                  variant="casual"
                   onCopy={() => {
                     handleCopy('english-casual', translationEn?.casual);
                   }}
@@ -227,7 +225,6 @@ export function HomeScreen(): React.JSX.Element {
                   value={translationHe?.formal}
                   placeholder={texts.home.translationPlaceholders.hebrewFormal}
                   isRtl
-                  variant="formal"
                   onCopy={() => {
                     handleCopy('hebrew-formal', translationHe?.formal);
                   }}
@@ -241,7 +238,6 @@ export function HomeScreen(): React.JSX.Element {
                   value={translationHe?.casual}
                   placeholder={texts.home.translationPlaceholders.hebrewCasual}
                   isRtl
-                  variant="casual"
                   onCopy={() => {
                     handleCopy('hebrew-casual', translationHe?.casual);
                   }}

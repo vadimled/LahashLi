@@ -10,7 +10,6 @@ type TranslationCardProps = {
   value?: string;
   placeholder: string;
   isRtl?: boolean;
-  variant: 'formal' | 'casual';
   onCopy: () => void;
   isCopied: boolean;
   isCopyDisabled: boolean;
@@ -22,7 +21,6 @@ export function TranslationCard({
   value,
   placeholder,
   isRtl = false,
-  variant,
   onCopy,
   isCopied,
   isCopyDisabled,
@@ -30,23 +28,11 @@ export function TranslationCard({
   const isEmpty = !value;
 
   return (
-    <View
-      style={[
-        styles.translationCard,
-        variant === 'formal' ? styles.translationCardFormal : styles.translationCardCasual,
-      ]}
-    >
+    <View style={[styles.translationCard, styles.translationCardFormal]}>
       <View style={styles.translationCardHeader}>
         <View style={styles.translationCardHeaderLeft}>
           <Text style={styles.translationLanguageLabel}>{languageLabel}</Text>
-          <Text
-            style={[
-              styles.translationVariantBadge,
-              variant === 'formal' ? styles.translationVariantBadgeFormal : styles.translationVariantBadgeCasual,
-            ]}
-          >
-            {variantLabel}
-          </Text>
+          <Text style={[styles.translationVariantBadge, styles.translationVariantBadgeFormal]}>{variantLabel}</Text>
         </View>
 
         <Pressable
