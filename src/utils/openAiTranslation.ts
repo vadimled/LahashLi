@@ -38,8 +38,11 @@ function buildInstructions(mode: TranslationMode): string {
         'You are a translation engine for a private mobile app.',
         'The user speaks Russian.',
         'Return two English translations of the same phrase.',
-        'formal = polite, neutral, more official wording.',
-        'casual = natural, simple, conversational spoken wording.',
+        'formal = standard, grammatically correct English, suitable for polite written communication, no slang.',
+        'casual = natural spoken English, everyday conversational style, slang is allowed if natural.',
+        'The two English outputs must be clearly different in wording and register.',
+        'Do not return the same sentence twice.',
+        'Preserve the original meaning.',
         'Return only strict JSON.',
         'Schema: {"source":"string","translationEn":{"formal":"string","casual":"string"}}',
         'Do not add markdown.',
@@ -51,8 +54,11 @@ function buildInstructions(mode: TranslationMode): string {
         'You are a translation engine for a private mobile app.',
         'The user speaks Russian.',
         'Return two Hebrew translations of the same phrase.',
-        'formal = polite, neutral, more official wording.',
-        'casual = natural, simple, conversational spoken wording.',
+        'formal = standard, grammatically correct Hebrew, suitable for polite written communication, no slang.',
+        'casual = natural spoken Israeli Hebrew, everyday conversational style, slang is allowed if natural.',
+        'The two Hebrew outputs must be clearly different in wording and register.',
+        'Do not return the same sentence twice.',
+        'Preserve the original meaning.',
         'Return only strict JSON.',
         'Schema: {"source":"string","translationHe":{"formal":"string","casual":"string"}}',
         'Do not add markdown.',
@@ -65,8 +71,11 @@ function buildInstructions(mode: TranslationMode): string {
         'The user speaks Russian.',
         'Return two English translations and two Hebrew translations of the same phrase.',
         'For each language:',
-        'formal = polite, neutral, more official wording.',
-        'casual = natural, simple, conversational spoken wording.',
+        'formal = standard, grammatically correct language, suitable for polite written communication, no slang.',
+        'casual = natural spoken language, everyday conversational style, slang is allowed if natural.',
+        'The two language outputs must be clearly different in wording and register.',
+        'Do not return the same sentence twice.',
+        'Preserve the original meaning.',
         'Return only strict JSON.',
         'Schema: {"source":"string","translationEn":{"formal":"string","casual":"string"},"translationHe":{"formal":"string","casual":"string"}}',
         'Do not add markdown.',
@@ -86,9 +95,7 @@ function extractOutputText(responseData: ResponsesApiResponse): string {
     .trim();
 }
 
-function normalizeVariant(
-  variant?: Partial<TranslationVariant>,
-): TranslationVariant | undefined {
+function normalizeVariant(variant?: Partial<TranslationVariant>): TranslationVariant | undefined {
   const formal = variant?.formal?.trim();
   const casual = variant?.casual?.trim();
 
@@ -102,10 +109,7 @@ function normalizeVariant(
   };
 }
 
-function parseTranslationResult(
-  rawText: string,
-  originalText: string,
-): OpenAiTranslationResult {
+function parseTranslationResult(rawText: string, originalText: string): OpenAiTranslationResult {
   const parsed = JSON.parse(rawText) as OpenAiTranslationResult;
 
   return {
@@ -116,11 +120,11 @@ function parseTranslationResult(
 }
 
 export async function translateWithOpenAi({
-                                            text,
-                                            mode,
-                                            apiKey,
-                                            model,
-                                          }: TranslateWithOpenAiParams): Promise<OpenAiTranslationResult> {
+  text,
+  mode,
+  apiKey,
+  model,
+}: TranslateWithOpenAiParams): Promise<OpenAiTranslationResult> {
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
@@ -154,9 +158,7 @@ export async function translateWithOpenAi({
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(
-      `OpenAI request failed with status ${response.status}: ${errorText}`,
-    );
+    throw new Error(`OpenAI request failed with status ${response.status}: ${errorText}`);
   }
 
   const responseData = (await response.json()) as ResponsesApiResponse;
