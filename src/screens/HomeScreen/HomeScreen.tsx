@@ -5,19 +5,18 @@ import { UITextView } from 'react-native-uitextview';
 
 import { useTranslationMode } from '../../shared/hooks/useTranslationMode';
 import { useVoiceFlow } from '../../shared/hooks/useVoiceFlow';
+import { Header } from '../../shared/ui/Header.tsx';
 import { ModeSelector } from '../../shared/ui/ModeSelector';
-import { RecordButton } from '../../shared/ui/RecordButton';
 import { Screen } from '../../shared/ui/Screen';
+import { TranslationCard } from '../../shared/ui/TranslationCard';
 import { colors } from '../../theme/colors';
 import { getHighlightedRecognizedSpeech } from '../../utils/helpers';
 import { texts } from '../../utils/texts';
-import { TranslationCard } from '../../shared/ui/TranslationCard.tsx';
 
 const RECOGNIZED_SPEECH_CONTENT_HEIGHT = 116;
 const TRANSLATIONS_SCROLL_TOP_OFFSET = 12;
 const CONTENT_BOTTOM_PADDING = 32;
 const COPY_SUCCESS_TIMEOUT_MS = 1500;
-
 
 export function HomeScreen(): React.JSX.Element {
   const { selectedMode, setSelectedMode } = useTranslationMode();
@@ -58,7 +57,7 @@ export function HomeScreen(): React.JSX.Element {
 
   const { leadingText, highlightedText } = getHighlightedRecognizedSpeech(liveTranscript ?? '');
 
-  const handleRecognizedSpeechContentSizeChange = useCallback(() => {
+  const handleRecognizedSpeechContentSizeChange = useCallback((): void => {
     if (!isListening) {
       return;
     }
@@ -66,7 +65,7 @@ export function HomeScreen(): React.JSX.Element {
     recognizedSpeechScrollRef.current?.scrollToEnd({ animated: true });
   }, [isListening]);
 
-  const handleTranslationsSectionLayout = useCallback((event: LayoutChangeEvent) => {
+  const handleTranslationsSectionLayout = useCallback((event: LayoutChangeEvent): void => {
     translationsSectionYRef.current = event.nativeEvent.layout.y;
   }, []);
 
@@ -128,12 +127,17 @@ export function HomeScreen(): React.JSX.Element {
   return (
     <Screen>
       <View style={styles.fixedTopSection}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{texts.app.name}</Text>
-          <Text style={styles.subtitle}>{texts.app.subtitle}</Text>
-        </View>
+        <Header recordButtonStatus={recordButtonStatus} onPressRecordButton={onPressRecordButton} />
 
         <ModeSelector selectedMode={selectedMode} onSelectMode={setSelectedMode} />
+
+        <View style={styles.hintRow}>
+          {isProcessing ? <ActivityIndicator size="small" color={colors.textSecondary} style={styles.spinner} /> : null}
+
+          <Text style={styles.hint}>{texts.home.recordButton.hint[recordButtonStatus]}</Text>
+        </View>
+
+        {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
       </View>
 
       <ScrollView
@@ -142,18 +146,6 @@ export function HomeScreen(): React.JSX.Element {
         contentContainerStyle={styles.contentScrollContainer}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.center}>
-          <RecordButton status={recordButtonStatus} onPress={onPressRecordButton} />
-
-          <View style={styles.hintRow}>
-            {isProcessing ? <ActivityIndicator size="small" color={colors.accent} style={styles.spinner} /> : null}
-
-            <Text style={styles.hint}>{texts.home.recordButton.hint[recordButtonStatus]}</Text>
-          </View>
-
-          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
-        </View>
-
         <View style={styles.recognizedSpeechCard}>
           <Text style={styles.recognizedSpeechTitle}>{texts.home.recognizedSpeech.title}</Text>
 
@@ -170,23 +162,23 @@ export function HomeScreen(): React.JSX.Element {
             <View style={styles.recognizedSpeechContentFrame}>
               <ScrollView
                 ref={recognizedSpeechScrollRef}
-                showsVerticalScrollIndicator={!isListening}
-                onContentSizeChange={handleRecognizedSpeechContentSizeChange}
                 contentContainerStyle={styles.recognizedSpeechScrollContent}
+                onContentSizeChange={handleRecognizedSpeechContentSizeChange}
+                showsVerticalScrollIndicator={false}
               >
                 {isRecognizedSpeechEmpty ? (
                   <Text style={[styles.recognizedSpeechValue, styles.recognizedSpeechValueEmpty]}>
                     {recognizedSpeechValue}
                   </Text>
                 ) : isListening ? (
-                  <Text style={styles.recognizedSpeechValue}>
-                    {leadingText}
-                    <Text style={styles.recognizedSpeechValueHighlighted}>{highlightedText}</Text>
-                  </Text>
-                ) : (
-                  <UITextView selectable uiTextView style={styles.recognizedSpeechValue}>
-                    {recognizedSpeechValue}
+                  <UITextView style={styles.recognizedSpeechValue}>
+                    <Text style={styles.recognizedSpeechValue}>{leadingText}</Text>
+                    <Text style={[styles.recognizedSpeechValue, styles.recognizedSpeechValueHighlighted]}>
+                      {highlightedText}
+                    </Text>
                   </UITextView>
+                ) : (
+                  <UITextView style={styles.recognizedSpeechValue}>{recognizedSpeechValue}</UITextView>
                 )}
               </ScrollView>
             </View>
@@ -211,6 +203,7 @@ export function HomeScreen(): React.JSX.Element {
                   isCopied={copiedKey === 'english-formal'}
                   isCopyDisabled={!translationEn?.formal}
                 />
+
                 <TranslationCard
                   languageLabel={texts.home.languageLabels.english}
                   variantLabel={texts.home.translationVariants.casual}
@@ -233,21 +226,22 @@ export function HomeScreen(): React.JSX.Element {
                   variantLabel={texts.home.translationVariants.formal}
                   value={translationHe?.formal}
                   placeholder={texts.home.translationPlaceholders.hebrewFormal}
-                  variant="formal"
                   isRtl
+                  variant="formal"
                   onCopy={() => {
                     handleCopy('hebrew-formal', translationHe?.formal);
                   }}
                   isCopied={copiedKey === 'hebrew-formal'}
                   isCopyDisabled={!translationHe?.formal}
                 />
+
                 <TranslationCard
                   languageLabel={texts.home.languageLabels.hebrew}
                   variantLabel={texts.home.translationVariants.casual}
                   value={translationHe?.casual}
                   placeholder={texts.home.translationPlaceholders.hebrewCasual}
-                  variant="casual"
                   isRtl
+                  variant="casual"
                   onCopy={() => {
                     handleCopy('hebrew-casual', translationHe?.casual);
                   }}
@@ -260,8 +254,8 @@ export function HomeScreen(): React.JSX.Element {
             {!hasAnyTranslation && !isProcessing ? (
               <Text style={styles.translationsHint}>
                 {shouldShowEnglish && shouldShowHebrew
-                  ? 'Formal and casual translations will appear here.'
-                  : 'Translation variants will appear here.'}
+                  ? texts.home.translationPlaceholders.bilingualHint
+                  : texts.home.translationPlaceholders.singleLanguageHint}
               </Text>
             ) : null}
           </View>
@@ -278,33 +272,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     zIndex: 1,
   },
-  header: {
-    gap: 4,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: colors.textSecondary,
-  },
   contentScroll: {
     flex: 1,
   },
   contentScrollContainer: {
     paddingBottom: CONTENT_BOTTOM_PADDING,
   },
-  center: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 8,
-    paddingBottom: 24,
-  },
   hintRow: {
     minHeight: 24,
-    marginTop: 20,
     paddingHorizontal: 24,
     flexDirection: 'row',
     alignItems: 'center',

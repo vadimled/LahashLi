@@ -36,20 +36,15 @@ export const texts = {
         processing: 'Preparing translation...',
       },
       error: {
-        speechRecognizerUnavailable:
-          'Speech recognition is not available on this device.',
-        permissionDenied:
-          'Microphone and Speech Recognition access are required to start voice input.',
+        speechRecognizerUnavailable: 'Speech recognition is not available on this device.',
+        permissionDenied: 'Microphone and Speech Recognition access are required to start voice input.',
         permissionRestricted: 'Speech input is restricted on this iPhone.',
         recordingStartFailed: 'Could not start listening.\nPlease try again.',
-        recognitionFailed: 'Speech recognition failed. Please try again.',
-        noSpeech:
-          'No speech was detected.\nPlease try again and speak a little longer.',
+        recognitionFailed: 'Speech recognition failed.\nPlease try again.',
+        noSpeech: 'No speech was detected.\nPlease try again and speak a little longer.',
         generic: 'Something went wrong while starting voice input.',
-        missingOpenAiApiKey:
-          'OpenAI API key is missing. Add it to openAiConfig.ts.',
-        translationFailed:
-          'Could not translate the phrase. Please try again.',
+        missingOpenAiApiKey: 'OpenAI API key is missing. Add it to openAiConfig.ts.',
+        translationFailed: 'Could not translate the phrase.\nPlease try again.',
       },
     },
     translationPlaceholders: {
@@ -57,6 +52,8 @@ export const texts = {
       englishCasual: 'Casual English translation will appear here.',
       hebrewFormal: 'התרגום הרשמי לעברית יופיע כאן.',
       hebrewCasual: 'התרגום היומיומי לעברית יופיע כאן.',
+      bilingualHint: 'Formal and casual translations will appear here.',
+      singleLanguageHint: 'Translation variants will appear here.',
     },
   },
 } as const;
