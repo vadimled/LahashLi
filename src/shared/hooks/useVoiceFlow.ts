@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { NativeEventEmitter, NativeModules, type EmitterSubscription } from 'react-native';
 import { useVoice } from 'react-native-voicekit';
 
 import { openAiConfig } from '../../utils/openAiConfig';
@@ -51,7 +50,7 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
 
   const liveTranscript = normalizeTranscript(rawLiveTranscript);
 
-  const clearFinalResultTimeout = useCallback(() => {
+  const clearFinalResultTimeout = useCallback((): void => {
     if (finalResultTimeoutRef.current) {
       clearTimeout(finalResultTimeoutRef.current);
       finalResultTimeoutRef.current = null;
@@ -116,27 +115,6 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
   );
 
   useEffect(() => {
-    const nativeVoiceKitModule = NativeModules.RNVoiceKit;
-
-    if (!nativeVoiceKitModule) {
-      return;
-    }
-
-    const eventEmitter = new NativeEventEmitter(nativeVoiceKitModule);
-
-    const subscriptions: EmitterSubscription[] = [
-      eventEmitter.addListener('availability-change', () => {}),
-      eventEmitter.addListener('RNVoiceKit.availability-change', () => {}),
-    ];
-
-    return () => {
-      subscriptions.forEach(subscription => {
-        subscription.remove();
-      });
-    };
-  }, []);
-
-  useEffect(() => {
     if (listening) {
       setVoiceFlowState(currentState => ({
         ...currentState,
@@ -165,7 +143,7 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
     };
   }, [clearFinalResultTimeout]);
 
-  const handleRecordButtonPress = useCallback(async () => {
+  const handleRecordButtonPress = useCallback(async (): Promise<void> => {
     if (voiceFlowState.status === 'processing') {
       return;
     }
