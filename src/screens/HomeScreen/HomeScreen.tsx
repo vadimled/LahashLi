@@ -12,6 +12,7 @@ import { TranslationCard } from '../../shared/ui/TranslationCard';
 import { colors } from '../../theme/colors';
 import { getHighlightedRecognizedSpeech } from '../../utils/helpers';
 import { texts } from '../../utils/texts';
+import { TranslationCopyKey } from '../../utils/constants.ts';
 
 const RECOGNIZED_SPEECH_CONTENT_HEIGHT = 116;
 const TRANSLATIONS_SCROLL_TOP_OFFSET = 12;
@@ -197,9 +198,9 @@ export function HomeScreen(): React.JSX.Element {
                   value={translationEn?.formal}
                   placeholder={texts.home.translationPlaceholders.englishFormal}
                   onCopy={() => {
-                    handleCopy('english-formal', translationEn?.formal);
+                    handleCopy(TranslationCopyKey.EnglishFormal, translationEn?.formal);
                   }}
-                  isCopied={copiedKey === 'english-formal'}
+                  isCopied={copiedKey === TranslationCopyKey.EnglishFormal}
                   isCopyDisabled={!translationEn?.formal}
                 />
 
@@ -209,9 +210,9 @@ export function HomeScreen(): React.JSX.Element {
                   value={translationEn?.casual}
                   placeholder={texts.home.translationPlaceholders.englishCasual}
                   onCopy={() => {
-                    handleCopy('english-casual', translationEn?.casual);
+                    handleCopy(TranslationCopyKey.EnglishCasual, translationEn?.casual);
                   }}
-                  isCopied={copiedKey === 'english-casual'}
+                  isCopied={copiedKey === TranslationCopyKey.EnglishCasual}
                   isCopyDisabled={!translationEn?.casual}
                 />
               </>
@@ -226,9 +227,9 @@ export function HomeScreen(): React.JSX.Element {
                   placeholder={texts.home.translationPlaceholders.hebrewFormal}
                   isRtl
                   onCopy={() => {
-                    handleCopy('hebrew-formal', translationHe?.formal);
+                    handleCopy(TranslationCopyKey.HebrewFormal, translationHe?.formal);
                   }}
-                  isCopied={copiedKey === 'hebrew-formal'}
+                  isCopied={copiedKey === TranslationCopyKey.HebrewFormal}
                   isCopyDisabled={!translationHe?.formal}
                 />
 
@@ -239,9 +240,9 @@ export function HomeScreen(): React.JSX.Element {
                   placeholder={texts.home.translationPlaceholders.hebrewCasual}
                   isRtl
                   onCopy={() => {
-                    handleCopy('hebrew-casual', translationHe?.casual);
+                    handleCopy(TranslationCopyKey.HebrewCasual, translationHe?.casual);
                   }}
-                  isCopied={copiedKey === 'hebrew-casual'}
+                  isCopied={copiedKey === TranslationCopyKey.HebrewCasual}
                   isCopyDisabled={!translationHe?.casual}
                 />
               </>
