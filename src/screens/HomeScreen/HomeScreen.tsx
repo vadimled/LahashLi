@@ -13,12 +13,13 @@ import { TranslationCard } from '../../shared/ui/TranslationCard';
 import { colors } from '../../theme/colors';
 import { getHighlightedRecognizedSpeech } from '../../utils/helpers';
 import { texts } from '../../utils/texts';
-import { TranslationCopyKey } from '../../utils/constants.ts';
-
-const RECOGNIZED_SPEECH_CONTENT_HEIGHT = 116;
-const TRANSLATIONS_SCROLL_TOP_OFFSET = 12;
-const CONTENT_BOTTOM_PADDING = 32;
-const COPY_SUCCESS_TIMEOUT_MS = 1500;
+import {
+  CONTENT_BOTTOM_PADDING,
+  COPY_SUCCESS_TIMEOUT_MS,
+  RECOGNIZED_SPEECH_CONTENT_HEIGHT,
+  TranslationCopyKey,
+  TRANSLATIONS_SCROLL_TOP_OFFSET,
+} from '../../utils/constants.ts';
 
 export function HomeScreen(): React.JSX.Element {
   const { selectedMode, setSelectedMode } = useTranslationMode();

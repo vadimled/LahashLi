@@ -4,3 +4,8 @@ export enum TranslationCopyKey {
   HebrewFormal = 'hebrew-formal',
   HebrewCasual = 'hebrew-casual',
 }
+
+export const RECOGNIZED_SPEECH_CONTENT_HEIGHT = 116;
+export const TRANSLATIONS_SCROLL_TOP_OFFSET = 12;
+export const CONTENT_BOTTOM_PADDING = 32;
+export const COPY_SUCCESS_TIMEOUT_MS = 1500;
