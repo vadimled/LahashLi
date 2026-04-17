@@ -2,21 +2,33 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '../../theme/colors';
+import { RecordButtonStatus } from '../../utils/recordButton';
 import { texts } from '../../utils/texts';
 import { RecordButton } from './RecordButton';
-import { RecordButtonStatus } from '../../utils/recordButton';
+import { SoundButton } from './SoundButton';
 
 type HeaderProps = {
   recordButtonStatus: RecordButtonStatus;
   onPressRecordButton: () => void;
+  isSoundEnabled: boolean;
+  isSpeaking: boolean;
+  onPressSoundButton: () => void;
 };
 
-export function Header({ recordButtonStatus, onPressRecordButton }: HeaderProps): React.JSX.Element {
+export function Header({
+  recordButtonStatus,
+  onPressRecordButton,
+  isSoundEnabled,
+  isSpeaking,
+  onPressSoundButton,
+}: HeaderProps): React.JSX.Element {
   return (
     <View style={styles.container}>
       <View style={styles.textBlock}>
         <Text style={styles.title}>{texts.app.name}</Text>
         <Text style={styles.subtitle}>{texts.app.subtitle}</Text>
+
+        <SoundButton isEnabled={isSoundEnabled} isSpeaking={isSpeaking} onPress={onPressSoundButton} />
       </View>
 
       <View style={styles.buttonWrapper}>
@@ -35,7 +47,7 @@ const styles = StyleSheet.create({
   },
   textBlock: {
     flex: 1,
-    gap: 4,
+    gap: 8,
     paddingTop: 2,
   },
   title: {

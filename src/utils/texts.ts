@@ -17,6 +17,16 @@ export const texts = {
       idle: 'Copy',
       success: 'Copied',
     },
+    soundButton: {
+      text: {
+        idle: 'Sound',
+        enabled: 'Sound on',
+        stop: 'Stop',
+      },
+      error: {
+        playbackFailed: 'Could not play audio.\nPlease try again.',
+      },
+    },
     recognizedSpeech: {
       title: 'Recognized speech',
       liveLabel: 'Live',
@@ -43,7 +53,7 @@ export const texts = {
         recognitionFailed: 'Speech recognition failed.\nPlease try again.',
         noSpeech: 'No speech was detected.\nPlease try again and speak a little longer.',
         generic: 'Something went wrong while starting voice input.',
-        missingOpenAiApiKey: 'OpenAI API key is missing. Add it to openAiConfig.ts.',
+        missingOpenAiApiKey: 'OpenAI API key is missing.\nAdd it to openAiConfig.ts.',
         translationFailed: 'Could not translate the phrase.\nPlease try again.',
       },
     },
