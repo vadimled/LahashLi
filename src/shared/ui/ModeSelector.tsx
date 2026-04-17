@@ -36,6 +36,7 @@ export function ModeSelector({ selectedMode, onSelectMode }: ModeSelectorProps):
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    marginTop: 12,
     backgroundColor: colors.backgroundSecondary,
     borderWidth: 1,
     borderColor: colors.border,
