@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '../../theme/colors';
 import { texts } from '../../utils/texts';
@@ -11,16 +11,18 @@ type SoundButtonProps = {
 };
 
 export function SoundButton({ isEnabled, isSpeaking, onPress }: SoundButtonProps): React.JSX.Element {
-  const label = isSpeaking
-    ? texts.home.soundButton.text.stop
+  const stateLabel = isSpeaking
+    ? texts.home.soundButton.state.stop
     : isEnabled
-    ? texts.home.soundButton.text.enabled
-    : texts.home.soundButton.text.idle;
+    ? texts.home.soundButton.state.on
+    : texts.home.soundButton.state.off;
+
+  const accessibilityLabel = `${texts.home.soundButton.text.idle} ${stateLabel}`;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
@@ -29,39 +31,82 @@ export function SoundButton({ isEnabled, isSpeaking, onPress }: SoundButtonProps
         pressed && styles.buttonPressed,
       ]}
     >
-      <Text style={styles.text}>{label}</Text>
+      <View style={styles.content}>
+        <Text style={styles.label}>{texts.home.soundButton.text.idle}</Text>
+
+        <View style={[styles.statePill, isEnabled && styles.statePillEnabled, isSpeaking && styles.statePillSpeaking]}>
+          <Text
+            style={[styles.stateText, isEnabled && styles.stateTextEnabled, isSpeaking && styles.stateTextSpeaking]}
+          >
+            {stateLabel}
+          </Text>
+        </View>
+      </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    alignSelf: 'flex-start',
-    minWidth: 108,
-    height: 36,
-    paddingHorizontal: 14,
-    borderRadius: 18,
+    width: '100%',
+    height: 38,
+    paddingHorizontal: 12,
+    borderRadius: 19,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.backgroundSecondary,
-    alignItems: 'center',
     justifyContent: 'center',
   },
   buttonEnabled: {
-    backgroundColor: colors.surfaceSecondary,
-    borderColor: colors.border,
+    borderColor: colors.accent,
+    backgroundColor: 'rgba(35, 207, 200, 0.08)',
   },
   buttonSpeaking: {
-    backgroundColor: colors.accent,
     borderColor: colors.accent,
+    backgroundColor: 'rgba(35, 207, 200, 0.14)',
   },
   buttonPressed: {
-    opacity: 0.86,
+    opacity: 0.88,
+    transform: [{ scale: 0.995 }],
   },
-  text: {
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  label: {
     fontSize: 13,
-    lineHeight: 18,
+    lineHeight: 16,
     fontWeight: '700',
     color: colors.textPrimary,
+  },
+  statePill: {
+    minWidth: 46,
+    height: 24,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: colors.surfaceSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statePillEnabled: {
+    backgroundColor: 'rgba(35, 207, 200, 0.16)',
+  },
+  statePillSpeaking: {
+    backgroundColor: colors.accent,
+  },
+  stateText: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '700',
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+  },
+  stateTextEnabled: {
+    color: colors.accent,
+  },
+  stateTextSpeaking: {
+    color: colors.background,
   },
 });

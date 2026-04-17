@@ -34,21 +34,21 @@ export function RecordButton({ status, onPress }: RecordButtonProps): React.JSX.
 
 const styles = StyleSheet.create({
   button: {
-    minWidth: 168,
-    height: 84,
-    paddingHorizontal: 28,
-    borderRadius: 14,
+    width: '100%',
+    height: 76,
+    paddingHorizontal: 20,
+    borderRadius: 22,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000000',
-    shadowOpacity: 0.24,
+    shadowOpacity: 0.18,
     shadowRadius: 14,
     shadowOffset: {
       width: 0,
       height: 8,
     },
-    elevation: 7,
+    elevation: 6,
   },
   buttonListening: {
     backgroundColor: colors.accent,
@@ -61,7 +61,8 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.985 }],
   },
   text: {
-    fontSize: 20,
+    fontSize: 18,
+    lineHeight: 22,
     fontWeight: '700',
     color: colors.textPrimary,
     textAlign: 'center',

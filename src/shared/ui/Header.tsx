@@ -27,12 +27,11 @@ export function Header({
       <View style={styles.textBlock}>
         <Text style={styles.title}>{texts.app.name}</Text>
         <Text style={styles.subtitle}>{texts.app.subtitle}</Text>
-
-        <SoundButton isEnabled={isSoundEnabled} isSpeaking={isSpeaking} onPress={onPressSoundButton} />
       </View>
 
-      <View style={styles.buttonWrapper}>
+      <View style={styles.actionsColumn}>
         <RecordButton status={recordButtonStatus} onPress={onPressRecordButton} />
+        <SoundButton isEnabled={isSoundEnabled} isSpeaking={isSpeaking} onPress={onPressSoundButton} />
       </View>
     </View>
   );
@@ -47,20 +46,24 @@ const styles = StyleSheet.create({
   },
   textBlock: {
     flex: 1,
-    gap: 8,
-    paddingTop: 2,
+    paddingTop: 4,
+    paddingRight: 4,
+    gap: 6,
   },
   title: {
-    fontSize: 32,
+    fontSize: 34,
+    lineHeight: 38,
     fontWeight: '700',
     color: colors.textPrimary,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 17,
+    lineHeight: 22,
     color: colors.textSecondary,
   },
-  buttonWrapper: {
-    alignSelf: 'stretch',
-    justifyContent: 'center',
+  actionsColumn: {
+    width: 156,
+    alignItems: 'stretch',
+    gap: 10,
   },
 });

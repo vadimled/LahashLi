@@ -1,8 +1,9 @@
 import { JSX } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { texts } from '../../utils/texts.ts';
 import { UITextView } from 'react-native-uitextview';
+
 import { colors } from '../../theme/colors.ts';
+import { texts } from '../../utils/texts.ts';
 
 type TranslationCardProps = {
   languageLabel: string;
@@ -26,13 +27,21 @@ export function TranslationCard({
   isCopyDisabled,
 }: TranslationCardProps): JSX.Element {
   const isEmpty = !value;
+  const isCasual = variantLabel.toLowerCase() === texts.home.translationVariants.casual.toLowerCase();
 
   return (
-    <View style={[styles.translationCard, styles.translationCardFormal]}>
+    <View style={[styles.translationCard, isCasual ? styles.translationCardCasual : styles.translationCardFormal]}>
       <View style={styles.translationCardHeader}>
         <View style={styles.translationCardHeaderLeft}>
           <Text style={styles.translationLanguageLabel}>{languageLabel}</Text>
-          <Text style={[styles.translationVariantBadge, styles.translationVariantBadgeFormal]}>{variantLabel}</Text>
+          <Text
+            style={[
+              styles.translationVariantBadge,
+              isCasual ? styles.translationVariantBadgeCasual : styles.translationVariantBadgeFormal,
+            ]}
+          >
+            {variantLabel}
+          </Text>
         </View>
 
         <Pressable
@@ -79,20 +88,21 @@ export function TranslationCard({
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   translationCard: {
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
-    padding: 14,
-    gap: 10,
+    padding: 16,
+    gap: 14,
   },
   translationCardFormal: {
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: colors.background,
     borderColor: colors.border,
   },
   translationCardCasual: {
     backgroundColor: 'rgba(35, 207, 200, 0.08)',
-    borderColor: colors.accent,
+    borderColor: 'rgba(35, 207, 200, 0.34)',
   },
   translationCardHeader: {
     flexDirection: 'row',
@@ -107,12 +117,14 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   translationLanguageLabel: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '700',
     color: colors.textPrimary,
   },
   translationVariantBadge: {
     fontSize: 11,
+    lineHeight: 14,
     fontWeight: '700',
     textTransform: 'uppercase',
     paddingHorizontal: 10,
@@ -129,8 +141,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
   copyButton: {
-    minWidth: 68,
-    height: 32,
+    minWidth: 72,
+    height: 34,
     paddingHorizontal: 12,
     borderRadius: 999,
     borderWidth: 1,
@@ -140,7 +152,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   copyButtonPressed: {
-    opacity: 0.8,
+    opacity: 0.82,
   },
   copyButtonDisabled: {
     opacity: 0.45,
@@ -151,6 +163,7 @@ const styles = StyleSheet.create({
   },
   copyButtonText: {
     fontSize: 12,
+    lineHeight: 16,
     fontWeight: '700',
     color: colors.textSecondary,
   },
@@ -161,8 +174,8 @@ const styles = StyleSheet.create({
     color: colors.accent,
   },
   translationValue: {
-    fontSize: 18,
-    lineHeight: 26,
+    fontSize: 19,
+    lineHeight: 28,
     fontWeight: '600',
     color: colors.textPrimary,
     padding: 0,

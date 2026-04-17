@@ -1,12 +1,5 @@
 import { Platform } from 'react-native';
-import {
-  check,
-  PERMISSIONS,
-  request,
-  RESULTS,
-  type Permission,
-  type PermissionStatus,
-} from 'react-native-permissions';
+import { check, PERMISSIONS, request, RESULTS, type Permission, type PermissionStatus } from 'react-native-permissions';
 
 export type MicrophonePermissionResult = 'granted' | 'denied' | 'blocked' | 'unavailable';
 

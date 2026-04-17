@@ -4,8 +4,7 @@ import { getNextRecordButtonStatus } from '../../utils/helpers';
 import { RecordButtonStatus } from '../../utils/recordButton';
 
 export function useRecordButtonState() {
-  const [recordButtonStatus, setRecordButtonStatus] =
-    useState<RecordButtonStatus>('idle');
+  const [recordButtonStatus, setRecordButtonStatus] = useState<RecordButtonStatus>('idle');
 
   useEffect(() => {
     if (recordButtonStatus !== 'processing') {
@@ -22,9 +21,7 @@ export function useRecordButtonState() {
   }, [recordButtonStatus]);
 
   const handleRecordButtonPress = () => {
-    setRecordButtonStatus(currentStatus =>
-      getNextRecordButtonStatus(currentStatus),
-    );
+    setRecordButtonStatus(currentStatus => getNextRecordButtonStatus(currentStatus));
   };
 
   return {

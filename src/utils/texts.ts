@@ -20,7 +20,12 @@ export const texts = {
     soundButton: {
       text: {
         idle: 'Sound',
-        enabled: 'Sound on',
+        enabled: 'Sound',
+        stop: 'Sound',
+      },
+      state: {
+        off: 'Off',
+        on: 'On',
         stop: 'Stop',
       },
       error: {

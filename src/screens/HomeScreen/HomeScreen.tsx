@@ -333,7 +333,6 @@ export function HomeScreen(): React.JSX.Element {
 
         <View style={styles.hintRow}>
           {isProcessing ? <ActivityIndicator size="small" color={colors.textSecondary} style={styles.spinner} /> : null}
-
           <Text style={styles.hint}>{texts.home.recordButton.hint[recordButtonStatus]}</Text>
         </View>
 
@@ -455,8 +454,8 @@ export function HomeScreen(): React.JSX.Element {
 
 const styles = StyleSheet.create({
   fixedTopSection: {
-    gap: 24,
-    paddingBottom: 16,
+    gap: 18,
+    paddingBottom: 12,
     backgroundColor: colors.background,
     zIndex: 1,
   },
@@ -467,8 +466,8 @@ const styles = StyleSheet.create({
     paddingBottom: CONTENT_BOTTOM_PADDING,
   },
   hintRow: {
-    minHeight: 24,
-    paddingHorizontal: 24,
+    minHeight: 20,
+    paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -477,15 +476,15 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   hint: {
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 14,
+    lineHeight: 20,
     textAlign: 'center',
     color: colors.textSecondary,
     flexShrink: 1,
   },
   errorText: {
-    marginTop: 12,
-    paddingHorizontal: 24,
+    marginTop: 2,
+    paddingHorizontal: 16,
     fontSize: 14,
     lineHeight: 20,
     textAlign: 'center',
@@ -495,13 +494,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundSecondary,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 20,
+    borderRadius: 22,
     padding: 16,
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   recognizedSpeechTitle: {
-    fontSize: 14,
+    fontSize: 15,
+    lineHeight: 20,
     fontWeight: '700',
     color: colors.textPrimary,
   },
@@ -510,7 +510,9 @@ const styles = StyleSheet.create({
   },
   recognizedSpeechLabel: {
     fontSize: 12,
+    lineHeight: 16,
     textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
   recognizedSpeechLabelActive: {
     color: colors.accent,
@@ -520,7 +522,7 @@ const styles = StyleSheet.create({
   },
   recognizedSpeechContentFrame: {
     height: RECOGNIZED_SPEECH_CONTENT_HEIGHT,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,
@@ -544,16 +546,18 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   translationsSection: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.backgroundSecondary,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 20,
-    padding: 16,
-    gap: 12,
+    borderRadius: 22,
+    padding: 14,
+    gap: 14,
   },
   translationsSectionTitle: {
-    fontSize: 12,
+    fontSize: 11,
+    lineHeight: 14,
     color: colors.textSecondary,
     textTransform: 'uppercase',
+    letterSpacing: 1,
   },
 });
