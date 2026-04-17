@@ -30,7 +30,7 @@ export function TranslationCard({
   const isCasual = variantLabel.toLowerCase() === texts.home.translationVariants.casual.toLowerCase();
 
   return (
-    <View style={[styles.translationCard, isCasual ? styles.translationCardCasual : styles.translationCardFormal]}>
+    <View style={styles.translationCard}>
       <View style={styles.translationCardHeader}>
         <View style={styles.translationCardHeaderLeft}>
           <View style={styles.translationMetaBlock}>
@@ -102,17 +102,11 @@ const styles = StyleSheet.create({
   translationCard: {
     borderRadius: 18,
     borderWidth: 1,
+    borderColor: colors.formalCardBorder,
+    backgroundColor: colors.formalCardBackground,
     padding: 16,
     gap: 14,
     overflow: 'hidden',
-  },
-  translationCardFormal: {
-    backgroundColor: colors.formalCardBackground,
-    borderColor: colors.formalCardBorder,
-  },
-  translationCardCasual: {
-    backgroundColor: colors.casualCardBackground,
-    borderColor: colors.casualCardBorder,
   },
   translationCardHeader: {
     flexDirection: 'row',
@@ -150,7 +144,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   translationVariantBadgeFormal: {
-    color: colors.textSecondary,
+    color: colors.textPrimary,
     backgroundColor: colors.surfaceSecondary,
   },
   translationVariantBadgeCasual: {
