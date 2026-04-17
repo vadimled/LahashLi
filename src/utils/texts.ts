@@ -9,6 +9,9 @@ export const texts = {
       formal: 'Formal',
       casual: 'Casual',
     },
+    translationVariantHints: {
+      casual: 'Everyday tone',
+    },
     languageLabels: {
       english: 'English',
       hebrew: 'Hebrew',

@@ -33,15 +33,24 @@ export function TranslationCard({
     <View style={[styles.translationCard, isCasual ? styles.translationCardCasual : styles.translationCardFormal]}>
       <View style={styles.translationCardHeader}>
         <View style={styles.translationCardHeaderLeft}>
-          <Text style={styles.translationLanguageLabel}>{languageLabel}</Text>
-          <Text
-            style={[
-              styles.translationVariantBadge,
-              isCasual ? styles.translationVariantBadgeCasual : styles.translationVariantBadgeFormal,
-            ]}
-          >
-            {variantLabel}
-          </Text>
+          <View style={styles.translationMetaBlock}>
+            <View style={styles.translationTitleRow}>
+              <Text style={styles.translationLanguageLabel}>{languageLabel}</Text>
+
+              <Text
+                style={[
+                  styles.translationVariantBadge,
+                  isCasual ? styles.translationVariantBadgeCasual : styles.translationVariantBadgeFormal,
+                ]}
+              >
+                {variantLabel}
+              </Text>
+            </View>
+
+            {isCasual ? (
+              <Text style={styles.translationVariantHint}>{texts.home.translationVariantHints.casual}</Text>
+            ) : null}
+          </View>
         </View>
 
         <Pressable
@@ -95,26 +104,34 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     gap: 14,
+    overflow: 'hidden',
   },
   translationCardFormal: {
-    backgroundColor: colors.background,
-    borderColor: colors.border,
+    backgroundColor: colors.formalCardBackground,
+    borderColor: colors.formalCardBorder,
   },
   translationCardCasual: {
-    backgroundColor: 'rgba(35, 207, 200, 0.08)',
-    borderColor: 'rgba(35, 207, 200, 0.34)',
+    backgroundColor: colors.casualCardBackground,
+    borderColor: colors.casualCardBorder,
   },
   translationCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 12,
   },
   translationCardHeaderLeft: {
+    flex: 1,
+    minWidth: 0,
+  },
+  translationMetaBlock: {
+    gap: 4,
+  },
+  translationTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   translationLanguageLabel: {
     fontSize: 14,
@@ -137,8 +154,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceSecondary,
   },
   translationVariantBadgeCasual: {
-    color: colors.background,
-    backgroundColor: colors.accent,
+    color: colors.casualBadgeText,
+    backgroundColor: colors.casualBadgeBackground,
+  },
+  translationVariantHint: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '500',
+    color: colors.textSecondary,
   },
   copyButton: {
     minWidth: 72,
