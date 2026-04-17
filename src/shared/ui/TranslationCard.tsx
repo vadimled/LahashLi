@@ -199,6 +199,9 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   translationValuePlaceholder: {
+    fontSize: 14,
+    lineHeight: 24,
+    fontWeight: '500',
     color: colors.textMuted,
   },
   translationValueLtr: {

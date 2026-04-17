@@ -22,7 +22,7 @@ export const colors = {
 
   textPrimary: '#F2F2F2',
   textSecondary: '#C7C7C7',
-  textMuted: '#9A9A9A',
+  textMuted: '#858484',
 
   warning: '#D9A441',
   danger: '#D84C4C',
