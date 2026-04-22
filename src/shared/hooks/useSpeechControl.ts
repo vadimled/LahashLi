@@ -128,6 +128,9 @@ export function useSpeechControl({
   // Auto-speak effect
   useEffect(() => {
     if (!isSoundEnabled || isProcessing || !currentSpeechSignature) {
+      if (!currentSpeechSignature) {
+        lastAutoSpokenSignatureRef.current = '';
+      }
       return;
     }
 

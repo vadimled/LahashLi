@@ -89,7 +89,6 @@ export function useHomeScreenLogic() {
 
       if (!isSoundEnabled) {
         dispatch(setIsSoundEnabled(true));
-        await speakCurrentTranslations();
         return;
       }
 
