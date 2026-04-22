@@ -3,11 +3,13 @@ import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
 
 import voiceReducer from './slices/voiceSlice';
 import uiReducer from './slices/uiSlice';
+import translationReducer from './slices/translationSlice';
 
 export const store = configureStore({
   reducer: {
     voice: voiceReducer,
     ui: uiReducer,
+    translation: translationReducer,
   },
 });
 

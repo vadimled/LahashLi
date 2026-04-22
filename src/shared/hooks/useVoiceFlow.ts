@@ -4,7 +4,7 @@ import { useVoice } from 'react-native-voicekit';
 import { RecordButtonStatus } from '../../utils/recordButton';
 import { texts } from '../../utils/texts';
 import { TranslationMode } from '../../utils/translationModes';
-import { mapVoiceErrorToMessage, normalizeTranscript, voiceRecognitionOptions } from '../../utils/voiceRecognition';
+import { mapVoiceErrorToMessage, normalizeTranscript, getVoiceRecognitionOptions } from '../../utils/voiceRecognition';
 import { TranslationVariant } from '../../utils/openAiTranslation';
 import { useAppDispatch, useAppSelector } from '../../store';
 import {
@@ -22,6 +22,7 @@ type UseVoiceFlowReturn = {
   liveTranscript?: string;
   translationEn?: TranslationVariant;
   translationHe?: TranslationVariant;
+  translationRu?: TranslationVariant;
   errorMessage?: string;
   handleRecordButtonPress: () => Promise<void>;
 };
@@ -43,7 +44,7 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
     stopListening,
     resetTranscript,
   } = useVoice({
-    ...voiceRecognitionOptions,
+    ...getVoiceRecognitionOptions(selectedMode),
     enablePartialResults: true,
   });
 
@@ -156,6 +157,7 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
     liveTranscript,
     translationEn: voiceState.translationEn,
     translationHe: voiceState.translationHe,
+    translationRu: voiceState.translationRu,
     errorMessage: voiceState.errorMessage,
     handleRecordButtonPress,
   };

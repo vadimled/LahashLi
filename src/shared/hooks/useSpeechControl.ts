@@ -11,6 +11,7 @@ interface UseSpeechControlProps {
   selectedMode: TranslationMode;
   translationEn?: TranslationVariant;
   translationHe?: TranslationVariant;
+  translationRu?: TranslationVariant;
   isProcessing: boolean;
 }
 
@@ -18,6 +19,7 @@ export function useSpeechControl({
   selectedMode,
   translationEn,
   translationHe,
+  translationRu,
   isProcessing,
 }: UseSpeechControlProps) {
   const dispatch = useAppDispatch();
@@ -30,6 +32,7 @@ export function useSpeechControl({
     selectedMode,
     translationEn,
     translationHe,
+    translationRu,
   });
 
   const currentSpeechSignature = createSpeechSignature(currentSpeechQueue);

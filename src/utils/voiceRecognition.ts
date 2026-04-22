@@ -1,12 +1,23 @@
 import { VoiceErrorCode, VoiceMode, type VoiceStartListeningOptions } from 'react-native-voicekit';
 
 import { texts } from './texts';
+import { TranslationMode } from './translationModes';
 
-export const voiceRecognitionOptions: VoiceStartListeningOptions = {
-  locale: 'ru-RU',
-  mode: VoiceMode.Continuous,
-  silenceTimeoutMs: 1200,
-};
+export function getVoiceRecognitionOptions(mode: TranslationMode): VoiceStartListeningOptions {
+  let locale = 'ru-RU';
+
+  if (mode === TranslationMode.EnToRu) {
+    locale = 'en-US';
+  } else if (mode === TranslationMode.HeToRu) {
+    locale = 'he-IL';
+  }
+
+  return {
+    locale,
+    mode: VoiceMode.Continuous,
+    silenceTimeoutMs: 1200,
+  };
+}
 
 export function normalizeTranscript(transcript: string): string {
   return transcript.replace(/\s+/g, ' ').trim();

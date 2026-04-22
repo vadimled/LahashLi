@@ -15,6 +15,7 @@ export const texts = {
     languageLabels: {
       english: 'English',
       hebrew: 'Hebrew',
+      russian: 'Russian',
     },
     copyButton: {
       idle: 'Copy',
@@ -50,7 +51,7 @@ export const texts = {
       },
       hint: {
         idle: 'Tap to start a new phrase.',
-        listening: 'Say your phrase in Russian, then tap again.',
+        listening: 'Speak clearly, then tap again.',
         processing: 'Preparing translation...',
       },
       error: {
@@ -70,6 +71,8 @@ export const texts = {
       englishCasual: 'Casual English translation will appear here.',
       hebrewFormal: 'התרגום הרשמי לעברית יופיע כאן.',
       hebrewCasual: 'התרגום היומיומי לעברית יופיע כאן.',
+      russianFormal: 'Здесь появится формальный перевод на русский.',
+      russianCasual: 'Здесь появится повседневный перевод на русский.',
       bilingualHint: 'Formal and casual translations will appear here.',
       singleLanguageHint: 'Translation variants will appear here.',
     },

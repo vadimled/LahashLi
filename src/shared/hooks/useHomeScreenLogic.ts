@@ -21,6 +21,7 @@ export function useHomeScreenLogic() {
     liveTranscript,
     translationEn,
     translationHe,
+    translationRu,
     errorMessage,
     handleRecordButtonPress,
   } = useVoiceFlow(selectedMode);
@@ -37,6 +38,7 @@ export function useHomeScreenLogic() {
     selectedMode,
     translationEn,
     translationHe,
+    translationRu,
     isProcessing,
   });
 
@@ -119,6 +121,7 @@ export function useHomeScreenLogic() {
 
   const shouldShowEnglish = selectedMode === TranslationMode.RuToEn || selectedMode === TranslationMode.RuToEnHe;
   const shouldShowHebrew = selectedMode === TranslationMode.RuToHe || selectedMode === TranslationMode.RuToEnHe;
+  const shouldShowRussian = selectedMode === TranslationMode.EnToRu || selectedMode === TranslationMode.HeToRu;
 
   return {
     // State
@@ -139,8 +142,10 @@ export function useHomeScreenLogic() {
     highlightedText,
     translationEn,
     translationHe,
+    translationRu,
     shouldShowEnglish,
     shouldShowHebrew,
+    shouldShowRussian,
     // Refs & Handlers
     contentScrollRef,
     recognizedSpeechScrollRef,

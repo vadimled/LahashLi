@@ -12,6 +12,7 @@ export interface VoiceState {
   liveTranscript?: string;
   translationEn?: TranslationVariant;
   translationHe?: TranslationVariant;
+  translationRu?: TranslationVariant;
   errorMessage?: string;
 }
 
@@ -58,14 +59,16 @@ const voiceSlice = createSlice({
         transcript?: string;
         translationEn?: TranslationVariant;
         translationHe?: TranslationVariant;
+        translationRu?: TranslationVariant;
         errorMessage?: string;
       }>
     ) {
-      const { transcript, translationEn, translationHe, errorMessage } = action.payload;
+      const { transcript, translationEn, translationHe, translationRu, errorMessage } = action.payload;
       state.status = 'idle';
       state.transcript = transcript;
       state.translationEn = translationEn;
       state.translationHe = translationHe;
+      state.translationRu = translationRu;
       state.errorMessage = errorMessage;
       state.liveTranscript = undefined;
     },
@@ -78,6 +81,7 @@ const voiceSlice = createSlice({
       state.liveTranscript = undefined;
       state.translationEn = undefined;
       state.translationHe = undefined;
+      state.translationRu = undefined;
       state.errorMessage = undefined;
     },
   },
@@ -91,6 +95,7 @@ const voiceSlice = createSlice({
         state.transcript = action.payload.source;
         state.translationEn = action.payload.translationEn;
         state.translationHe = action.payload.translationHe;
+        state.translationRu = action.payload.translationRu;
         state.errorMessage = undefined;
         state.liveTranscript = undefined;
       })

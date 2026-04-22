@@ -5,6 +5,7 @@ import { TranslationMode } from './translationModes';
 
 const ENGLISH_LANGUAGE = 'en-US';
 const HEBREW_LANGUAGE = 'he-IL';
+const RUSSIAN_LANGUAGE = 'ru-RU';
 
 export type SpeechChunk = {
   text: string;
@@ -15,6 +16,7 @@ type BuildSpeechQueueParams = {
   selectedMode: TranslationMode;
   translationEn?: TranslationVariant;
   translationHe?: TranslationVariant;
+  translationRu?: TranslationVariant;
 };
 
 function normalizeSpeechText(value?: string): string {
@@ -44,6 +46,7 @@ export function buildSpeechQueue({
   selectedMode,
   translationEn,
   translationHe,
+  translationRu,
 }: BuildSpeechQueueParams): SpeechChunk[] {
   const chunks: SpeechChunk[] = [];
 
@@ -63,6 +66,12 @@ export function buildSpeechQueue({
       pushChunk(chunks, translationEn?.casual, ENGLISH_LANGUAGE);
       pushChunk(chunks, translationHe?.formal, HEBREW_LANGUAGE);
       pushChunk(chunks, translationHe?.casual, HEBREW_LANGUAGE);
+      break;
+
+    case TranslationMode.EnToRu:
+    case TranslationMode.HeToRu:
+      pushChunk(chunks, translationRu?.formal, RUSSIAN_LANGUAGE);
+      pushChunk(chunks, translationRu?.casual, RUSSIAN_LANGUAGE);
       break;
   }
 

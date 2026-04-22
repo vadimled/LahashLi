@@ -9,6 +9,7 @@ export type OpenAiTranslationResult = {
   source: string;
   translationEn?: TranslationVariant;
   translationHe?: TranslationVariant;
+  translationRu?: TranslationVariant;
 };
 
 type TranslateWithOpenAiParams = {
@@ -66,6 +67,34 @@ function buildInstructions(mode: TranslationMode): string {
         'Do not return the same sentence twice.',
         'Preserve the original meaning and emotional tone as closely as possible.',
         'Use natural modern Hebrew.',
+        'Do not add explanations.',
+      ].join(' ');
+
+    case TranslationMode.EnToRu:
+      return [
+        'You are a translation engine for a private mobile app.',
+        'The user provides an English phrase.',
+        'Translate it into Russian.',
+        'Return two distinct Russian variants of the same meaning.',
+        'formal = standard, grammatically correct Russian, suitable for polite written communication, no slang.',
+        'casual = natural spoken Russian, everyday conversational style, slang is allowed only if it sounds natural.',
+        'The formal and casual Russian variants must be clearly different in wording and register.',
+        'Do not return the same sentence twice.',
+        'Preserve the original meaning and emotional tone as closely as possible.',
+        'Do not add explanations.',
+      ].join(' ');
+
+    case TranslationMode.HeToRu:
+      return [
+        'You are a translation engine for a private mobile app.',
+        'The user provides a Hebrew phrase.',
+        'Translate it into Russian.',
+        'Return two distinct Russian variants of the same meaning.',
+        'formal = standard, grammatically correct Russian, suitable for polite written communication, no slang.',
+        'casual = natural spoken Russian, everyday conversational style, slang is allowed only if it sounds natural.',
+        'The formal and casual Russian variants must be clearly different in wording and register.',
+        'Do not return the same sentence twice.',
+        'Preserve the original meaning and emotional tone as closely as possible.',
         'Do not add explanations.',
       ].join(' ');
 
@@ -134,6 +163,34 @@ function getSchemaForMode(mode: TranslationMode): JsonSchema {
         additionalProperties: false,
       };
 
+    case TranslationMode.EnToRu:
+      return {
+        type: 'object',
+        properties: {
+          source: {
+            type: 'string',
+            description: 'Original English text exactly as provided by the user.',
+          },
+          translationRu: createVariantSchema('Russian'),
+        },
+        required: ['source', 'translationRu'],
+        additionalProperties: false,
+      };
+
+    case TranslationMode.HeToRu:
+      return {
+        type: 'object',
+        properties: {
+          source: {
+            type: 'string',
+            description: 'Original Hebrew text exactly as provided by the user.',
+          },
+          translationRu: createVariantSchema('Russian'),
+        },
+        required: ['source', 'translationRu'],
+        additionalProperties: false,
+      };
+
     case TranslationMode.RuToEnHe:
       return {
         type: 'object',
@@ -192,6 +249,7 @@ function parseTranslationResult(rawText: string, originalText: string): OpenAiTr
     source: normalizeString(parsed.source) || originalText,
     translationEn: normalizeVariant(parsed.translationEn),
     translationHe: normalizeVariant(parsed.translationHe),
+    translationRu: normalizeVariant(parsed.translationRu),
   };
 }
 
@@ -210,6 +268,10 @@ function validateResult(result: OpenAiTranslationResult, mode: TranslationMode):
 
   if (mode === TranslationMode.RuToEnHe && (!result.translationEn || !result.translationHe)) {
     throw new Error('OpenAI response is missing "translationEn" or "translationHe"');
+  }
+
+  if ((mode === TranslationMode.EnToRu || mode === TranslationMode.HeToRu) && !result.translationRu) {
+    throw new Error('OpenAI response is missing "translationRu"');
   }
 }
 

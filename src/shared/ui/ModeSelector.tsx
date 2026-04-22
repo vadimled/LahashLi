@@ -13,19 +13,33 @@ export function ModeSelector({ selectedMode, onSelectMode }: ModeSelectorProps):
   return (
     <View style={styles.container}>
       {translationModeOptions.map(option => {
-        const isSelected = option.id === selectedMode;
+        const isSelected = option.id === selectedMode || option.toggleMode === selectedMode;
+
+        const handlePress = () => {
+          if (selectedMode === option.id && option.toggleMode) {
+            onSelectMode(option.toggleMode);
+          } else {
+            onSelectMode(option.id);
+          }
+        };
+
+        const displayLabel = selectedMode === option.toggleMode && option.toggleMode
+          ? option.label.split(' → ').reverse().join(' → ')
+          : option.label;
 
         return (
           <Pressable
             key={option.id}
-            onPress={() => onSelectMode(option.id)}
+            onPress={handlePress}
             style={({ pressed }) => [
               styles.option,
               isSelected && styles.optionSelected,
               pressed && styles.optionPressed,
             ]}
           >
-            <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>{option.label}</Text>
+            <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
+              {displayLabel}
+            </Text>
           </Pressable>
         );
       })}

@@ -3,6 +3,8 @@ export enum TranslationCopyKey {
   EnglishCasual = 'english-casual',
   HebrewFormal = 'hebrew-formal',
   HebrewCasual = 'hebrew-casual',
+  RussianFormal = 'russian-formal',
+  RussianCasual = 'russian-casual',
 }
 
 export const RECOGNIZED_SPEECH_CONTENT_HEIGHT = 116;

@@ -28,8 +28,10 @@ export function HomeScreen(): React.JSX.Element {
     highlightedText,
     translationEn,
     translationHe,
+    translationRu,
     shouldShowEnglish,
     shouldShowHebrew,
+    shouldShowRussian,
     contentScrollRef,
     recognizedSpeechScrollRef,
     handleRecognizedSpeechContentSizeChange,
@@ -105,7 +107,7 @@ export function HomeScreen(): React.JSX.Element {
           </View>
         </View>
 
-        {shouldShowEnglish || shouldShowHebrew ? (
+        {shouldShowEnglish || shouldShowHebrew || shouldShowRussian ? (
           <View style={styles.translationsSection} onLayout={handleTranslationsSectionLayout}>
             <Text style={styles.translationsSectionTitle}>{texts.home.translationsLabel}</Text>
 
@@ -163,6 +165,34 @@ export function HomeScreen(): React.JSX.Element {
                   }}
                   isCopied={copiedKey === TranslationCopyKey.HebrewCasual}
                   isCopyDisabled={!translationHe?.casual}
+                />
+              </>
+            ) : null}
+
+            {shouldShowRussian ? (
+              <>
+                <TranslationCard
+                  languageLabel={texts.home.languageLabels.russian}
+                  variantLabel={texts.home.translationVariants.formal}
+                  value={translationRu?.formal}
+                  placeholder={texts.home.translationPlaceholders.russianFormal}
+                  onCopy={() => {
+                    handleCopy(TranslationCopyKey.RussianFormal, translationRu?.formal);
+                  }}
+                  isCopied={copiedKey === TranslationCopyKey.RussianFormal}
+                  isCopyDisabled={!translationRu?.formal}
+                />
+
+                <TranslationCard
+                  languageLabel={texts.home.languageLabels.russian}
+                  variantLabel={texts.home.translationVariants.casual}
+                  value={translationRu?.casual}
+                  placeholder={texts.home.translationPlaceholders.russianCasual}
+                  onCopy={() => {
+                    handleCopy(TranslationCopyKey.RussianCasual, translationRu?.casual);
+                  }}
+                  isCopied={copiedKey === TranslationCopyKey.RussianCasual}
+                  isCopyDisabled={!translationRu?.casual}
                 />
               </>
             ) : null}
