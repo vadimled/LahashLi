@@ -99,7 +99,7 @@ export function useHomeScreenLogic() {
     run().catch(error => {
       console.error('onPressSoundButton failed', error);
     });
-  }, [isSoundEnabled, isSpeaking, speakCurrentTranslations, stopCurrentSpeech, dispatch]);
+  }, [isSoundEnabled, isSpeaking, stopCurrentSpeech, dispatch]);
 
   useEffect(() => {
     clearCopiedState();
