@@ -33,7 +33,6 @@ export function useHomeScreenLogic() {
     isSpeaking,
     isSoundEnabled,
     stopCurrentSpeech,
-    speakCurrentTranslations,
   } = useSpeechControl({
     selectedMode,
     translationEn,
