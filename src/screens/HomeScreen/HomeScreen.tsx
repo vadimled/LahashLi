@@ -1,321 +1,43 @@
-import Speech from '@mhpdev/react-native-speech';
-import Clipboard from '@react-native-clipboard/clipboard';
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { ActivityIndicator, LayoutChangeEvent, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { UITextView } from 'react-native-uitextview';
-
-import { useTranslationMode } from '../../shared/hooks/useTranslationMode';
-import { useVoiceFlow } from '../../shared/hooks/useVoiceFlow';
 import { Header } from '../../shared/ui/Header';
 import { ModeSelector } from '../../shared/ui/ModeSelector';
 import { Screen } from '../../shared/ui/Screen';
 import { TranslationCard } from '../../shared/ui/TranslationCard';
 import { colors } from '../../theme/colors';
-import {
-  CONTENT_BOTTOM_PADDING,
-  COPY_SUCCESS_TIMEOUT_MS,
-  RECOGNIZED_SPEECH_CONTENT_HEIGHT,
-  TRANSLATIONS_SCROLL_TOP_OFFSET,
-  TranslationCopyKey,
-} from '../../utils/constants.ts';
-import { getHighlightedRecognizedSpeech } from '../../utils/helpers';
-import { buildSpeechQueue, createSpeechSignature, speakSpeechQueue, stopSpeaking } from '../../utils/textToSpeech';
+import { CONTENT_BOTTOM_PADDING, RECOGNIZED_SPEECH_CONTENT_HEIGHT, TranslationCopyKey } from '../../utils/constants.ts';
 import { texts } from '../../utils/texts';
-import { TranslationMode } from '../../utils/translationModes';
-import { useAppDispatch, useAppSelector } from '../../store';
-import { setCopiedKey, setIsSpeaking, setIsSoundEnabled, setSoundErrorMessage } from '../../store/slices/uiSlice';
+import { useHomeScreenLogic } from '../../shared/hooks/useHomeScreenLogic';
 
 export function HomeScreen(): React.JSX.Element {
-  const dispatch = useAppDispatch();
-  const { isSoundEnabled, isSpeaking, soundErrorMessage, copiedKey } = useAppSelector((state) => state.ui);
-  const { selectedMode, setSelectedMode } = useTranslationMode();
-
   const {
+    selectedMode,
+    setSelectedMode,
     recordButtonStatus,
-    transcript,
-    liveTranscript,
+    isListening,
+    isProcessing,
+    isSpeaking,
+    isSoundEnabled,
+    displayedErrorMessage,
+    copiedKey,
+    recognizedSpeechLabel,
+    recognizedSpeechValue,
+    isRecognizedSpeechEmpty,
+    leadingText,
+    highlightedText,
     translationEn,
     translationHe,
-    errorMessage,
-    handleRecordButtonPress,
-  } = useVoiceFlow(selectedMode);
-
-  const contentScrollRef = useRef<ScrollView | null>(null);
-  const recognizedSpeechScrollRef = useRef<ScrollView | null>(null);
-  const translationsSectionYRef = useRef(0);
-  const wasListeningRef = useRef(false);
-  const copiedResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const activeSpeechIdsRef = useRef<Set<string>>(new Set());
-  const lastAutoSpokenSignatureRef = useRef('');
-
-  const isListening = recordButtonStatus === 'listening';
-  const isProcessing = recordButtonStatus === 'processing';
-
-  const shouldShowEnglish = selectedMode === TranslationMode.RuToEn || selectedMode === TranslationMode.RuToEnHe;
-  const shouldShowHebrew = selectedMode === TranslationMode.RuToHe || selectedMode === TranslationMode.RuToEnHe;
-
-  const recognizedSpeechLabel = isListening
-    ? texts.home.recognizedSpeech.liveLabel
-    : texts.home.recognizedSpeech.finalLabel;
-
-  const recognizedSpeechValue = isListening
-    ? liveTranscript || texts.home.recognizedSpeech.emptyLive
-    : transcript || texts.home.recognizedSpeech.emptyFinal;
-
-  const isRecognizedSpeechEmpty = isListening ? !liveTranscript : !transcript;
-
-  const { leadingText, highlightedText } = getHighlightedRecognizedSpeech(liveTranscript ?? '');
-
-  const currentSpeechQueue = useMemo(() => {
-    return buildSpeechQueue({
-      selectedMode,
-      translationEn,
-      translationHe,
-    });
-  }, [selectedMode, translationEn, translationHe]);
-
-  const currentSpeechSignature = useMemo(() => {
-    return createSpeechSignature(currentSpeechQueue);
-  }, [currentSpeechQueue]);
-
-  const displayedErrorMessage = soundErrorMessage ?? errorMessage;
-
-  const clearSpeechState = useCallback((): void => {
-    activeSpeechIdsRef.current.clear();
-    dispatch(setIsSpeaking(false));
-  }, [dispatch]);
-
-  const stopCurrentSpeech = useCallback(async (): Promise<void> => {
-    clearSpeechState();
-
-    try {
-      await stopSpeaking();
-    } catch (error) {
-      console.error('stopSpeaking failed', error);
-    }
-  }, [clearSpeechState]);
-
-  const speakCurrentTranslations = useCallback(async (): Promise<boolean> => {
-    if (!currentSpeechQueue.length) {
-      return false;
-    }
-
-    dispatch(setSoundErrorMessage(undefined));
-
-    try {
-      await stopSpeaking();
-      clearSpeechState();
-
-      const utteranceIds = await speakSpeechQueue(currentSpeechQueue);
-      activeSpeechIdsRef.current = new Set(utteranceIds);
-
-      if (!utteranceIds.length) {
-        dispatch(setIsSpeaking(false));
-        return false;
-      }
-
-      dispatch(setIsSpeaking(true));
-      return true;
-    } catch (error) {
-      clearSpeechState();
-      dispatch(setSoundErrorMessage(texts.home.soundButton.error.playbackFailed));
-      console.error('speakCurrentTranslations failed', error);
-      return false;
-    }
-  }, [clearSpeechState, currentSpeechQueue, dispatch]);
-
-  const handleRecognizedSpeechContentSizeChange = useCallback((): void => {
-    if (!isListening) {
-      return;
-    }
-
-    recognizedSpeechScrollRef.current?.scrollToEnd({ animated: true });
-  }, [isListening]);
-
-  const handleTranslationsSectionLayout = useCallback((event: LayoutChangeEvent): void => {
-    translationsSectionYRef.current = event.nativeEvent.layout.y;
-  }, []);
-
-  const onPressRecordButton = useCallback((): void => {
-    const run = async (): Promise<void> => {
-      dispatch(setSoundErrorMessage(undefined));
-
-      if (isSpeaking) {
-        await stopCurrentSpeech();
-      }
-
-      await handleRecordButtonPress();
-    };
-
-    run().catch(error => {
-      console.error('handleRecordButtonPress failed', error);
-    });
-  }, [handleRecordButtonPress, isSpeaking, stopCurrentSpeech, dispatch]);
-
-  const onPressSoundButton = useCallback((): void => {
-    const run = async (): Promise<void> => {
-      dispatch(setSoundErrorMessage(undefined));
-
-      if (isSpeaking) {
-        await stopCurrentSpeech();
-        return;
-      }
-
-      if (!isSoundEnabled) {
-        dispatch(setIsSoundEnabled(true));
-
-        if (currentSpeechSignature) {
-          lastAutoSpokenSignatureRef.current = currentSpeechSignature;
-          await speakCurrentTranslations();
-        }
-
-        return;
-      }
-
-      dispatch(setIsSoundEnabled(false));
-      await stopCurrentSpeech();
-    };
-
-    run().catch(error => {
-      console.error('onPressSoundButton failed', error);
-    });
-  }, [currentSpeechSignature, isSoundEnabled, isSpeaking, speakCurrentTranslations, stopCurrentSpeech, dispatch]);
-
-  const handleCopy = useCallback((key: TranslationCopyKey, value?: string): void => {
-    if (!value) {
-      return;
-    }
-
-    Clipboard.setString(value);
-    dispatch(setCopiedKey(key));
-
-    if (copiedResetTimeoutRef.current) {
-      clearTimeout(copiedResetTimeoutRef.current);
-    }
-
-    copiedResetTimeoutRef.current = setTimeout(() => {
-      dispatch(setCopiedKey(null));
-    }, COPY_SUCCESS_TIMEOUT_MS);
-  }, [dispatch]);
-
-  useEffect(() => {
-    const startSubscription = Speech.onStart(({ id }) => {
-      if (activeSpeechIdsRef.current.has(id)) {
-        dispatch(setIsSpeaking(true));
-      }
-    });
-
-    const finishSubscription = Speech.onFinish(({ id }) => {
-      if (!activeSpeechIdsRef.current.has(id)) {
-        return;
-      }
-
-      activeSpeechIdsRef.current.delete(id);
-
-      if (activeSpeechIdsRef.current.size === 0) {
-        dispatch(setIsSpeaking(false));
-      }
-    });
-
-    const stoppedSubscription = Speech.onStopped(({ id }) => {
-      if (activeSpeechIdsRef.current.has(id)) {
-        activeSpeechIdsRef.current.delete(id);
-      }
-
-      if (activeSpeechIdsRef.current.size === 0) {
-        dispatch(setIsSpeaking(false));
-      }
-    });
-
-    const errorSubscription = Speech.onError(({ id }) => {
-      if (activeSpeechIdsRef.current.has(id)) {
-        activeSpeechIdsRef.current.delete(id);
-      }
-
-      if (activeSpeechIdsRef.current.size === 0) {
-        dispatch(setIsSpeaking(false));
-      }
-
-      dispatch(setSoundErrorMessage(texts.home.soundButton.error.playbackFailed));
-    });
-
-    return () => {
-      startSubscription.remove();
-      finishSubscription.remove();
-      stoppedSubscription.remove();
-      errorSubscription.remove();
-    };
-  }, [dispatch]);
-
-  useEffect(() => {
-    dispatch(setCopiedKey(null));
-    dispatch(setSoundErrorMessage(undefined));
-    lastAutoSpokenSignatureRef.current = '';
-
-    if (copiedResetTimeoutRef.current) {
-      clearTimeout(copiedResetTimeoutRef.current);
-    }
-
-    stopCurrentSpeech().catch(error => {
-      console.error('stopCurrentSpeech on mode change failed', error);
-    });
-  }, [selectedMode, stopCurrentSpeech, dispatch]);
-
-  useEffect(() => {
-    if (!isSoundEnabled) {
-      return;
-    }
-
-    if (isProcessing) {
-      return;
-    }
-
-    if (!currentSpeechSignature) {
-      return;
-    }
-
-    if (currentSpeechSignature === lastAutoSpokenSignatureRef.current) {
-      return;
-    }
-
-    lastAutoSpokenSignatureRef.current = currentSpeechSignature;
-
-    speakCurrentTranslations().catch(error => {
-      console.error('auto speak failed', error);
-    });
-  }, [currentSpeechSignature, isProcessing, isSoundEnabled, speakCurrentTranslations]);
-
-  useEffect(() => {
-    const hasSwitchedFromLiveToFinal = wasListeningRef.current && !isListening;
-
-    if (hasSwitchedFromLiveToFinal) {
-      requestAnimationFrame(() => {
-        recognizedSpeechScrollRef.current?.scrollTo({
-          y: 0,
-          animated: false,
-        });
-
-        contentScrollRef.current?.scrollTo({
-          y: Math.max(0, translationsSectionYRef.current - TRANSLATIONS_SCROLL_TOP_OFFSET),
-          animated: true,
-        });
-      });
-    }
-
-    wasListeningRef.current = isListening;
-  }, [isListening, recognizedSpeechValue]);
-
-  useEffect(() => {
-    return () => {
-      if (copiedResetTimeoutRef.current) {
-        clearTimeout(copiedResetTimeoutRef.current);
-      }
-
-      stopCurrentSpeech().catch(error => {
-        console.error('stopCurrentSpeech on unmount failed', error);
-      });
-    };
-  }, [stopCurrentSpeech]);
+    shouldShowEnglish,
+    shouldShowHebrew,
+    contentScrollRef,
+    recognizedSpeechScrollRef,
+    handleRecognizedSpeechContentSizeChange,
+    handleTranslationsSectionLayout,
+    onPressRecordButton,
+    onPressSoundButton,
+    handleCopy,
+  } = useHomeScreenLogic();
 
   return (
     <Screen>
