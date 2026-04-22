@@ -1,97 +1,101 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# LahashLi
 
-# Getting Started
+LahashLi is a React Native application built with TypeScript, designed for voice-to-voice translation and speech processing. It leverages OpenAI for translations and advanced speech technologies for a seamless user experience.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## 🚀 Getting Started
 
-## Step 1: Start Metro
+### Prerequisites
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+- **Node.js**: `>=22.11.0`
+- **npm**: (comes with Node.js)
+- **CocoaPods**: (for iOS development)
+- **Android Studio / Xcode**: (for mobile emulation/builds)
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+### Installation
 
-```sh
-# Using npm
-npm start
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd LahashLi
+   ```
 
-# OR using Yarn
-yarn start
-```
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-## Step 2: Build and run your app
+3. **Install iOS Pods**:
+   ```bash
+   npm run pods
+   ```
+   *Note: If you encounter issues with `Podfile.lock`, use `npm run clean:pods`.*
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### Running the App
 
-### Android
+1. **Start Metro Bundler**:
+   ```bash
+   npm start
+   ```
 
-```sh
-# Using npm
-npm run android
+2. **Run on Android**:
+   ```bash
+   npm run android
+   ```
 
-# OR using Yarn
-yarn android
-```
+3. **Run on iOS**:
+   ```bash
+   npm run ios
+   ```
 
-### iOS
+## 🛠 Project Structure
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+- `src/screens`: UI screens (e.g., `HomeScreen`).
+- `src/shared`: Shared UI components, hooks, and constants.
+- `src/utils`: Business logic, helpers, and integrations:
+  - `voiceRecognition.ts`: Wraps `react-native-voicekit` for STT.
+  - `textToSpeech.ts`: Wraps `@mhpdev/react-native-speech` for TTS.
+  - `openAiTranslation.ts`: Handles translation logic via OpenAI.
+- `src/theme`: Styling and color definitions.
+- `__tests__`: Unit and component tests.
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+## 📜 Scripts
 
-```sh
-bundle install
-```
+| Script | Description |
+| :--- | :--- |
+| `npm start` | Starts the Metro bundler. |
+| `npm run android` | Builds and runs the app on an Android emulator or device. |
+| `npm run ios` | Builds and runs the app on an iOS simulator or device. |
+| `npm run lint` | Runs ESLint for code quality checks. |
+| `npm test` | Executes unit tests using Jest. |
+| `npm run typecheck` | Runs TypeScript compiler to check for type errors. |
+| `npm run pods` | Installs CocoaPods dependencies. |
+| `npm run clean:pods` | Cleans and reinstalls CocoaPods dependencies. |
 
-Then, and every time you update your native dependencies, run:
+## ⚙️ Configuration & Environment
 
-```sh
-bundle exec pod install
-```
+### OpenAI Configuration
+The app uses OpenAI for translation. Configuration is located at `src/utils/openAiConfig.ts`.
+- **TODO**: Move sensitive configuration (like API keys) to environment variables (`.env` file).
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+### State Management
+- **Redux Toolkit**: Used for global state management.
 
-```sh
-# Using npm
-npm run ios
+### Data Validation
+- **Zod**: Used for schema validation across the project.
 
-# OR using Yarn
-yarn ios
-```
+## 🧪 Testing
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+The project uses **Jest** for unit and component testing.
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+- **Run all tests**:
+  ```bash
+  npm test
+  ```
+- **Run a specific test file**:
+  ```bash
+  npx jest path/to/test.ts
+  ```
 
-## Step 3: Modify your app
+## 📝 License
 
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+- **TODO**: Add license information.

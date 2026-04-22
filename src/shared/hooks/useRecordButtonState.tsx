@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { getNextRecordButtonStatus } from '../../utils/helpers';
-import { RecordButtonStatus } from '../../utils/recordButton';
+import { getNextRecordButtonStatus, RecordButtonStatus } from '../../utils/recordButton';
 
 export function useRecordButtonState() {
   const [recordButtonStatus, setRecordButtonStatus] = useState<RecordButtonStatus>('idle');

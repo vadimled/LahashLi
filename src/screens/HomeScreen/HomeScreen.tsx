@@ -1,6 +1,6 @@
 import Speech from '@mhpdev/react-native-speech';
 import Clipboard from '@react-native-clipboard/clipboard';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { ActivityIndicator, LayoutChangeEvent, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { UITextView } from 'react-native-uitextview';
 
@@ -22,8 +22,12 @@ import { getHighlightedRecognizedSpeech } from '../../utils/helpers';
 import { buildSpeechQueue, createSpeechSignature, speakSpeechQueue, stopSpeaking } from '../../utils/textToSpeech';
 import { texts } from '../../utils/texts';
 import { TranslationMode } from '../../utils/translationModes';
+import { useAppDispatch, useAppSelector } from '../../store';
+import { setCopiedKey, setIsSpeaking, setIsSoundEnabled, setSoundErrorMessage } from '../../store/slices/uiSlice';
 
 export function HomeScreen(): React.JSX.Element {
+  const dispatch = useAppDispatch();
+  const { isSoundEnabled, isSpeaking, soundErrorMessage, copiedKey } = useAppSelector((state) => state.ui);
   const { selectedMode, setSelectedMode } = useTranslationMode();
 
   const {
@@ -35,11 +39,6 @@ export function HomeScreen(): React.JSX.Element {
     errorMessage,
     handleRecordButtonPress,
   } = useVoiceFlow(selectedMode);
-
-  const [copiedKey, setCopiedKey] = useState<TranslationCopyKey | null>(null);
-  const [isSoundEnabled, setIsSoundEnabled] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [soundErrorMessage, setSoundErrorMessage] = useState<string | undefined>(undefined);
 
   const contentScrollRef = useRef<ScrollView | null>(null);
   const recognizedSpeechScrollRef = useRef<ScrollView | null>(null);
@@ -83,8 +82,8 @@ export function HomeScreen(): React.JSX.Element {
 
   const clearSpeechState = useCallback((): void => {
     activeSpeechIdsRef.current.clear();
-    setIsSpeaking(false);
-  }, []);
+    dispatch(setIsSpeaking(false));
+  }, [dispatch]);
 
   const stopCurrentSpeech = useCallback(async (): Promise<void> => {
     clearSpeechState();
@@ -101,7 +100,7 @@ export function HomeScreen(): React.JSX.Element {
       return false;
     }
 
-    setSoundErrorMessage(undefined);
+    dispatch(setSoundErrorMessage(undefined));
 
     try {
       await stopSpeaking();
@@ -111,19 +110,19 @@ export function HomeScreen(): React.JSX.Element {
       activeSpeechIdsRef.current = new Set(utteranceIds);
 
       if (!utteranceIds.length) {
-        setIsSpeaking(false);
+        dispatch(setIsSpeaking(false));
         return false;
       }
 
-      setIsSpeaking(true);
+      dispatch(setIsSpeaking(true));
       return true;
     } catch (error) {
       clearSpeechState();
-      setSoundErrorMessage(texts.home.soundButton.error.playbackFailed);
+      dispatch(setSoundErrorMessage(texts.home.soundButton.error.playbackFailed));
       console.error('speakCurrentTranslations failed', error);
       return false;
     }
-  }, [clearSpeechState, currentSpeechQueue]);
+  }, [clearSpeechState, currentSpeechQueue, dispatch]);
 
   const handleRecognizedSpeechContentSizeChange = useCallback((): void => {
     if (!isListening) {
@@ -139,7 +138,7 @@ export function HomeScreen(): React.JSX.Element {
 
   const onPressRecordButton = useCallback((): void => {
     const run = async (): Promise<void> => {
-      setSoundErrorMessage(undefined);
+      dispatch(setSoundErrorMessage(undefined));
 
       if (isSpeaking) {
         await stopCurrentSpeech();
@@ -151,11 +150,11 @@ export function HomeScreen(): React.JSX.Element {
     run().catch(error => {
       console.error('handleRecordButtonPress failed', error);
     });
-  }, [handleRecordButtonPress, isSpeaking, stopCurrentSpeech]);
+  }, [handleRecordButtonPress, isSpeaking, stopCurrentSpeech, dispatch]);
 
   const onPressSoundButton = useCallback((): void => {
     const run = async (): Promise<void> => {
-      setSoundErrorMessage(undefined);
+      dispatch(setSoundErrorMessage(undefined));
 
       if (isSpeaking) {
         await stopCurrentSpeech();
@@ -163,7 +162,7 @@ export function HomeScreen(): React.JSX.Element {
       }
 
       if (!isSoundEnabled) {
-        setIsSoundEnabled(true);
+        dispatch(setIsSoundEnabled(true));
 
         if (currentSpeechSignature) {
           lastAutoSpokenSignatureRef.current = currentSpeechSignature;
@@ -173,14 +172,14 @@ export function HomeScreen(): React.JSX.Element {
         return;
       }
 
-      setIsSoundEnabled(false);
+      dispatch(setIsSoundEnabled(false));
       await stopCurrentSpeech();
     };
 
     run().catch(error => {
       console.error('onPressSoundButton failed', error);
     });
-  }, [currentSpeechSignature, isSoundEnabled, isSpeaking, speakCurrentTranslations, stopCurrentSpeech]);
+  }, [currentSpeechSignature, isSoundEnabled, isSpeaking, speakCurrentTranslations, stopCurrentSpeech, dispatch]);
 
   const handleCopy = useCallback((key: TranslationCopyKey, value?: string): void => {
     if (!value) {
@@ -188,21 +187,21 @@ export function HomeScreen(): React.JSX.Element {
     }
 
     Clipboard.setString(value);
-    setCopiedKey(key);
+    dispatch(setCopiedKey(key));
 
     if (copiedResetTimeoutRef.current) {
       clearTimeout(copiedResetTimeoutRef.current);
     }
 
     copiedResetTimeoutRef.current = setTimeout(() => {
-      setCopiedKey(currentKey => (currentKey === key ? null : currentKey));
+      dispatch(setCopiedKey(null));
     }, COPY_SUCCESS_TIMEOUT_MS);
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     const startSubscription = Speech.onStart(({ id }) => {
       if (activeSpeechIdsRef.current.has(id)) {
-        setIsSpeaking(true);
+        dispatch(setIsSpeaking(true));
       }
     });
 
@@ -214,7 +213,7 @@ export function HomeScreen(): React.JSX.Element {
       activeSpeechIdsRef.current.delete(id);
 
       if (activeSpeechIdsRef.current.size === 0) {
-        setIsSpeaking(false);
+        dispatch(setIsSpeaking(false));
       }
     });
 
@@ -224,7 +223,7 @@ export function HomeScreen(): React.JSX.Element {
       }
 
       if (activeSpeechIdsRef.current.size === 0) {
-        setIsSpeaking(false);
+        dispatch(setIsSpeaking(false));
       }
     });
 
@@ -234,10 +233,10 @@ export function HomeScreen(): React.JSX.Element {
       }
 
       if (activeSpeechIdsRef.current.size === 0) {
-        setIsSpeaking(false);
+        dispatch(setIsSpeaking(false));
       }
 
-      setSoundErrorMessage(texts.home.soundButton.error.playbackFailed);
+      dispatch(setSoundErrorMessage(texts.home.soundButton.error.playbackFailed));
     });
 
     return () => {
@@ -246,11 +245,11 @@ export function HomeScreen(): React.JSX.Element {
       stoppedSubscription.remove();
       errorSubscription.remove();
     };
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
-    setCopiedKey(null);
-    setSoundErrorMessage(undefined);
+    dispatch(setCopiedKey(null));
+    dispatch(setSoundErrorMessage(undefined));
     lastAutoSpokenSignatureRef.current = '';
 
     if (copiedResetTimeoutRef.current) {
@@ -260,7 +259,7 @@ export function HomeScreen(): React.JSX.Element {
     stopCurrentSpeech().catch(error => {
       console.error('stopCurrentSpeech on mode change failed', error);
     });
-  }, [selectedMode, stopCurrentSpeech]);
+  }, [selectedMode, stopCurrentSpeech, dispatch]);
 
   useEffect(() => {
     if (!isSoundEnabled) {
