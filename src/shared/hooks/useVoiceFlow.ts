@@ -1,20 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useVoice } from 'react-native-voicekit';
 
-import { openAiConfig } from '../../utils/openAiConfig';
-import { translateWithOpenAi, type TranslationVariant } from '../../utils/openAiTranslation';
 import { RecordButtonStatus } from '../../utils/recordButton';
 import { texts } from '../../utils/texts';
 import { TranslationMode } from '../../utils/translationModes';
 import { mapVoiceErrorToMessage, normalizeTranscript, voiceRecognitionOptions } from '../../utils/voiceRecognition';
-
-type VoiceFlowState = {
-  status: RecordButtonStatus;
-  transcript?: string;
-  translationEn?: TranslationVariant;
-  translationHe?: TranslationVariant;
-  errorMessage?: string;
-};
+import { TranslationVariant } from '../../utils/openAiTranslation';
+import { useAppDispatch, useAppSelector } from '../../store';
+import {
+  setLiveTranscript,
+  setStatus,
+  setErrorMessage,
+  resetVoiceState,
+  translateTranscript,
+  setTranslationResult,
+} from '../../store/slices/voiceSlice';
 
 type UseVoiceFlowReturn = {
   recordButtonStatus: RecordButtonStatus;
@@ -29,9 +29,8 @@ type UseVoiceFlowReturn = {
 const FINAL_RESULT_TIMEOUT_MS = 1800;
 
 export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn {
-  const [voiceFlowState, setVoiceFlowState] = useState<VoiceFlowState>({
-    status: 'idle',
-  });
+  const dispatch = useAppDispatch();
+  const voiceState = useAppSelector((state) => state.voice);
 
   const waitingForFinalResultRef = useRef(false);
   const finalResultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -50,6 +49,10 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
 
   const liveTranscript = normalizeTranscript(rawLiveTranscript);
 
+  useEffect(() => {
+    dispatch(setLiveTranscript(liveTranscript));
+  }, [liveTranscript, dispatch]);
+
   const clearFinalResultTimeout = useCallback((): void => {
     if (finalResultTimeoutRef.current) {
       clearTimeout(finalResultTimeoutRef.current);
@@ -57,70 +60,10 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
     }
   }, []);
 
-  const translateFinalTranscript = useCallback(
-    async (finalTranscript: string): Promise<void> => {
-      if (!openAiConfig.apiKey.trim()) {
-        setVoiceFlowState({
-          status: 'idle',
-          transcript: finalTranscript,
-          translationEn: undefined,
-          translationHe: undefined,
-          errorMessage: texts.home.recordButton.error.missingOpenAiApiKey,
-        });
-
-        return;
-      }
-
-      try {
-        const translationResult = await translateWithOpenAi({
-          text: finalTranscript,
-          mode: selectedMode,
-          apiKey: openAiConfig.apiKey,
-          model: openAiConfig.model,
-        });
-
-        setVoiceFlowState({
-          status: 'idle',
-          transcript: translationResult.source,
-          translationEn: translationResult.translationEn,
-          translationHe: translationResult.translationHe,
-          errorMessage: undefined,
-        });
-      } catch {
-        setVoiceFlowState({
-          status: 'idle',
-          transcript: finalTranscript,
-          translationEn: undefined,
-          translationHe: undefined,
-          errorMessage: texts.home.recordButton.error.translationFailed,
-        });
-      }
-    },
-    [selectedMode],
-  );
-
-  const runTranslateFinalTranscript = useCallback(
-    (finalTranscript: string): void => {
-      translateFinalTranscript(finalTranscript).catch(() => {
-        setVoiceFlowState({
-          status: 'idle',
-          transcript: finalTranscript,
-          translationEn: undefined,
-          translationHe: undefined,
-          errorMessage: texts.home.recordButton.error.translationFailed,
-        });
-      });
-    },
-    [translateFinalTranscript],
-  );
-
   useEffect(() => {
     if (listening) {
-      setVoiceFlowState(currentState => ({
-        ...currentState,
-        status: 'listening',
-        errorMessage: undefined,
-      }));
+      dispatch(setStatus('listening'));
+      dispatch(setErrorMessage(undefined));
       return;
     }
 
@@ -134,8 +77,8 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
 
     waitingForFinalResultRef.current = false;
     clearFinalResultTimeout();
-    runTranslateFinalTranscript(liveTranscript);
-  }, [clearFinalResultTimeout, listening, liveTranscript, runTranslateFinalTranscript]);
+    dispatch(translateTranscript({ transcript: liveTranscript, mode: selectedMode }));
+  }, [clearFinalResultTimeout, listening, liveTranscript, selectedMode, dispatch]);
 
   useEffect(() => {
     return () => {
@@ -144,29 +87,19 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
   }, [clearFinalResultTimeout]);
 
   useEffect(() => {
-    setVoiceFlowState({
-      status: 'idle',
-      transcript: undefined,
-      translationEn: undefined,
-      translationHe: undefined,
-      errorMessage: undefined,
-    });
+    dispatch(resetVoiceState());
     waitingForFinalResultRef.current = false;
     clearFinalResultTimeout();
-  }, [selectedMode, clearFinalResultTimeout]);
+  }, [selectedMode, clearFinalResultTimeout, dispatch]);
 
   const handleRecordButtonPress = useCallback(async (): Promise<void> => {
-    if (voiceFlowState.status === 'processing') {
+    if (voiceState.status === 'processing') {
       return;
     }
 
-    if (voiceFlowState.status === 'idle') {
+    if (voiceState.status === 'idle') {
       if (!available) {
-        setVoiceFlowState(currentState => ({
-          ...currentState,
-          status: 'idle',
-          errorMessage: texts.home.recordButton.error.speechRecognizerUnavailable,
-        }));
+        dispatch(setErrorMessage(texts.home.recordButton.error.speechRecognizerUnavailable));
         return;
       }
 
@@ -176,35 +109,20 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
 
       try {
         await startListening();
-
-        setVoiceFlowState({
-          status: 'listening',
-          transcript: undefined,
-          translationEn: undefined,
-          translationHe: undefined,
-          errorMessage: undefined,
-        });
+        dispatch(resetVoiceState());
+        dispatch(setStatus('listening'));
       } catch (error) {
         const typedError = error as { code?: string };
-
-        setVoiceFlowState(currentState => ({
-          ...currentState,
-          status: 'idle',
-          errorMessage: mapVoiceErrorToMessage(typedError.code),
-        }));
+        dispatch(setErrorMessage(mapVoiceErrorToMessage(typedError.code)));
       }
 
       return;
     }
 
-    if (voiceFlowState.status === 'listening') {
+    if (voiceState.status === 'listening') {
       waitingForFinalResultRef.current = true;
-
-      setVoiceFlowState(currentState => ({
-        ...currentState,
-        status: 'processing',
-        errorMessage: undefined,
-      }));
+      dispatch(setStatus('processing'));
+      dispatch(setErrorMessage(undefined));
 
       clearFinalResultTimeout();
 
@@ -214,10 +132,7 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
         }
 
         waitingForFinalResultRef.current = false;
-
-        setVoiceFlowState(currentState => ({
-          ...currentState,
-          status: 'idle',
+        dispatch(setTranslationResult({
           errorMessage: texts.home.recordButton.error.noSpeech,
         }));
       }, FINAL_RESULT_TIMEOUT_MS);
@@ -229,23 +144,19 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
         clearFinalResultTimeout();
 
         const typedError = error as { code?: string };
-
-        setVoiceFlowState(currentState => ({
-          ...currentState,
-          status: 'idle',
-          errorMessage: mapVoiceErrorToMessage(typedError.code),
-        }));
+        dispatch(setErrorMessage(mapVoiceErrorToMessage(typedError.code)));
+        dispatch(setStatus('idle'));
       }
     }
-  }, [available, clearFinalResultTimeout, resetTranscript, startListening, stopListening, voiceFlowState.status]);
+  }, [available, clearFinalResultTimeout, resetTranscript, startListening, stopListening, voiceState.status, dispatch]);
 
   return {
-    recordButtonStatus: voiceFlowState.status,
-    transcript: voiceFlowState.transcript,
+    recordButtonStatus: voiceState.status,
+    transcript: voiceState.transcript,
     liveTranscript,
-    translationEn: voiceFlowState.translationEn,
-    translationHe: voiceFlowState.translationHe,
-    errorMessage: voiceFlowState.errorMessage,
+    translationEn: voiceState.translationEn,
+    translationHe: voiceState.translationHe,
+    errorMessage: voiceState.errorMessage,
     handleRecordButtonPress,
   };
 }
