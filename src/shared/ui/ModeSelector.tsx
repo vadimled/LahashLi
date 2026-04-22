@@ -13,23 +13,24 @@ export function ModeSelector({ selectedMode, onSelectMode }: ModeSelectorProps):
   return (
     <View style={styles.container}>
       {translationModeOptions.map(option => {
-        const isSelected = option.id === selectedMode || option.toggleMode === selectedMode;
+        const { id, toggleMode, label } = option;
+        const isSelected = id === selectedMode || toggleMode === selectedMode;
 
         const handlePress = () => {
-          if (selectedMode === option.id && option.toggleMode) {
-            onSelectMode(option.toggleMode);
+          if (selectedMode === id && toggleMode) {
+            onSelectMode(toggleMode);
           } else {
-            onSelectMode(option.id);
+            onSelectMode(id);
           }
         };
 
-        const displayLabel = selectedMode === option.toggleMode && option.toggleMode
-          ? option.label.split(' → ').reverse().join(' → ')
-          : option.label;
+        const displayLabel = selectedMode === toggleMode && toggleMode
+          ? label.split(' → ').reverse().join(' → ')
+          : label;
 
         return (
           <Pressable
-            key={option.id}
+            key={id}
             onPress={handlePress}
             style={({ pressed }) => [
               styles.option,
