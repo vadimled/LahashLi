@@ -7,6 +7,7 @@ import { Screen } from '../../shared/ui/Screen';
 import { TranslationCard } from '../../shared/ui/TranslationCard';
 import { colors } from '../../theme/colors';
 import { CONTENT_BOTTOM_PADDING, RECOGNIZED_SPEECH_CONTENT_HEIGHT, TranslationCopyKey } from '../../utils/constants.ts';
+import { ENGLISH_LANGUAGE, HEBREW_LANGUAGE, RUSSIAN_LANGUAGE } from '../../utils/textToSpeech';
 import { texts } from '../../utils/texts';
 import { useHomeScreenLogic } from '../../shared/hooks/useHomeScreenLogic';
 
@@ -39,6 +40,7 @@ export function HomeScreen(): React.JSX.Element {
     onPressRecordButton,
     onPressSoundButton,
     handleCopy,
+    handlePlaySingleSound,
   } = useHomeScreenLogic();
 
   return (
@@ -123,6 +125,10 @@ export function HomeScreen(): React.JSX.Element {
                   }}
                   isCopied={copiedKey === TranslationCopyKey.EnglishFormal}
                   isCopyDisabled={!translationEn?.formal}
+                  onPlaySound={() => {
+                    handlePlaySingleSound(translationEn?.formal ?? '', ENGLISH_LANGUAGE);
+                  }}
+                  isPlaySoundDisabled={!translationEn?.formal}
                 />
 
                 <TranslationCard
@@ -135,6 +141,10 @@ export function HomeScreen(): React.JSX.Element {
                   }}
                   isCopied={copiedKey === TranslationCopyKey.EnglishCasual}
                   isCopyDisabled={!translationEn?.casual}
+                  onPlaySound={() => {
+                    handlePlaySingleSound(translationEn?.casual ?? '', ENGLISH_LANGUAGE);
+                  }}
+                  isPlaySoundDisabled={!translationEn?.casual}
                 />
               </>
             ) : null}
@@ -152,6 +162,10 @@ export function HomeScreen(): React.JSX.Element {
                   }}
                   isCopied={copiedKey === TranslationCopyKey.HebrewFormal}
                   isCopyDisabled={!translationHe?.formal}
+                  onPlaySound={() => {
+                    handlePlaySingleSound(translationHe?.formal ?? '', HEBREW_LANGUAGE);
+                  }}
+                  isPlaySoundDisabled={!translationHe?.formal}
                 />
 
                 <TranslationCard
@@ -165,6 +179,10 @@ export function HomeScreen(): React.JSX.Element {
                   }}
                   isCopied={copiedKey === TranslationCopyKey.HebrewCasual}
                   isCopyDisabled={!translationHe?.casual}
+                  onPlaySound={() => {
+                    handlePlaySingleSound(translationHe?.casual ?? '', HEBREW_LANGUAGE);
+                  }}
+                  isPlaySoundDisabled={!translationHe?.casual}
                 />
               </>
             ) : null}
@@ -181,6 +199,10 @@ export function HomeScreen(): React.JSX.Element {
                   }}
                   isCopied={copiedKey === TranslationCopyKey.RussianFormal}
                   isCopyDisabled={!translationRu?.formal}
+                  onPlaySound={() => {
+                    handlePlaySingleSound(translationRu?.formal ?? '', RUSSIAN_LANGUAGE);
+                  }}
+                  isPlaySoundDisabled={!translationRu?.formal}
                 />
 
                 <TranslationCard
@@ -193,6 +215,10 @@ export function HomeScreen(): React.JSX.Element {
                   }}
                   isCopied={copiedKey === TranslationCopyKey.RussianCasual}
                   isCopyDisabled={!translationRu?.casual}
+                  onPlaySound={() => {
+                    handlePlaySingleSound(translationRu?.casual ?? '', RUSSIAN_LANGUAGE);
+                  }}
+                  isPlaySoundDisabled={!translationRu?.casual}
                 />
               </>
             ) : null}

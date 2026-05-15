@@ -14,6 +14,8 @@ type TranslationCardProps = {
   onCopy: () => void;
   isCopied: boolean;
   isCopyDisabled: boolean;
+  onPlaySound: () => void;
+  isPlaySoundDisabled: boolean;
 };
 
 export function TranslationCard({
@@ -25,6 +27,8 @@ export function TranslationCard({
   onCopy,
   isCopied,
   isCopyDisabled,
+  onPlaySound,
+  isPlaySoundDisabled,
 }: TranslationCardProps): JSX.Element {
   const isEmpty = !value;
   const isCasual = variantLabel.toLowerCase() === texts.home.translationVariants.casual.toLowerCase();
@@ -53,26 +57,40 @@ export function TranslationCard({
           </View>
         </View>
 
-        <Pressable
-          onPress={onCopy}
-          disabled={isCopyDisabled}
-          style={({ pressed }) => [
-            styles.copyButton,
-            isCopied && styles.copyButtonSuccess,
-            isCopyDisabled && styles.copyButtonDisabled,
-            pressed && !isCopyDisabled && styles.copyButtonPressed,
-          ]}
-        >
-          <Text
-            style={[
-              styles.copyButtonText,
-              isCopied && styles.copyButtonTextSuccess,
-              isCopyDisabled && styles.copyButtonTextDisabled,
+        <View style={styles.headerActions}>
+          <Pressable
+            onPress={onPlaySound}
+            disabled={isPlaySoundDisabled}
+            style={({ pressed }) => [
+              styles.soundButton,
+              isPlaySoundDisabled && styles.copyButtonDisabled,
+              pressed && !isPlaySoundDisabled && styles.copyButtonPressed,
             ]}
           >
-            {isCopied ? texts.home.copyButton.success : texts.home.copyButton.idle}
-          </Text>
-        </Pressable>
+            <Text style={[styles.soundButtonIcon, isPlaySoundDisabled && styles.copyButtonTextDisabled]}>🔊</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={onCopy}
+            disabled={isCopyDisabled}
+            style={({ pressed }) => [
+              styles.copyButton,
+              isCopied && styles.copyButtonSuccess,
+              isCopyDisabled && styles.copyButtonDisabled,
+              pressed && !isCopyDisabled && styles.copyButtonPressed,
+            ]}
+          >
+            <Text
+              style={[
+                styles.copyButtonText,
+                isCopied && styles.copyButtonTextSuccess,
+                isCopyDisabled && styles.copyButtonTextDisabled,
+              ]}
+            >
+              {isCopied ? texts.home.copyButton.success : texts.home.copyButton.idle}
+            </Text>
+          </Pressable>
+        </View>
       </View>
 
       {isEmpty ? (
@@ -117,6 +135,11 @@ const styles = StyleSheet.create({
   translationCardHeaderLeft: {
     flex: 1,
     minWidth: 0,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   translationMetaBlock: {
     gap: 4,
@@ -189,6 +212,20 @@ const styles = StyleSheet.create({
   },
   copyButtonTextSuccess: {
     color: colors.accent,
+  },
+  soundButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.backgroundSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  soundButtonIcon: {
+    fontSize: 14,
+    color: colors.textSecondary,
   },
   translationValue: {
     fontSize: 19,

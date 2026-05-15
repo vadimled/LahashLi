@@ -33,6 +33,7 @@ export function useHomeScreenLogic() {
     isSpeaking,
     isSoundEnabled,
     stopCurrentSpeech,
+    speakSingleText,
   } = useSpeechControl({
     selectedMode,
     translationEn,
@@ -152,5 +153,6 @@ export function useHomeScreenLogic() {
     onPressRecordButton,
     onPressSoundButton,
     handleCopy,
+    handlePlaySingleSound: speakSingleText,
   };
 }

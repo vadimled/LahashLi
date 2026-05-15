@@ -80,6 +80,35 @@ export function useSpeechControl({
     }
   }, [clearSpeechState, currentSpeechQueue, dispatch]);
 
+  const speakSingleText = useCallback(async (text: string, language: string): Promise<boolean> => {
+    if (!text) {
+      return false;
+    }
+
+    dispatch(setSoundErrorMessage(undefined));
+
+    try {
+      await stopSpeaking();
+      clearSpeechState();
+
+      const utteranceIds = await speakSpeechQueue([{ text, language }]);
+      activeSpeechIdsRef.current = new Set(utteranceIds);
+
+      if (!utteranceIds.length) {
+        dispatch(setIsSpeaking(false));
+        return false;
+      }
+
+      dispatch(setIsSpeaking(true));
+      return true;
+    } catch (error) {
+      clearSpeechState();
+      dispatch(setSoundErrorMessage(texts.home.soundButton.error.playbackFailed));
+      console.error('speakSingleText failed', error);
+      return false;
+    }
+  }, [clearSpeechState, dispatch]);
+
 
   useEffect(() => {
     const startSubscription = Speech.onStart(({ id }) => {
@@ -151,6 +180,7 @@ export function useSpeechControl({
     currentSpeechSignature,
     stopCurrentSpeech,
     speakCurrentTranslations,
+    speakSingleText,
     clearSpeechState,
   };
 }

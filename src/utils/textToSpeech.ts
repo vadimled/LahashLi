@@ -3,9 +3,9 @@ import Speech from '@mhpdev/react-native-speech';
 import { type TranslationVariant } from './openAiTranslation';
 import { TranslationMode } from './translationModes';
 
-const ENGLISH_LANGUAGE = 'en-US';
-const HEBREW_LANGUAGE = 'he-IL';
-const RUSSIAN_LANGUAGE = 'ru-RU';
+export const ENGLISH_LANGUAGE = 'en-US';
+export const HEBREW_LANGUAGE = 'he-IL';
+export const RUSSIAN_LANGUAGE = 'ru-RU';
 
 export type SpeechChunk = {
   text: string;
