@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   },
   copyButtonSuccess: {
     borderColor: colors.accent,
-    backgroundColor: 'rgba(35, 207, 200, 0.14)',
+    backgroundColor: colors.accentSuccess,
   },
   copyButtonText: {
     fontSize: 12,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   },
   soundButtonSpeaking: {
     borderColor: colors.accent,
-    backgroundColor: 'rgba(35, 207, 200, 0.22)',
+    backgroundColor: colors.accentSpeaking,
   },
   soundButtonIconSpeaking: {
     color: colors.accent,

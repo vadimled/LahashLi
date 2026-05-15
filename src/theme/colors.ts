@@ -11,6 +11,10 @@ export const colors = {
   accent: '#23CFC8',
   accentPressed: '#1DB8B2',
   accentHighlighted: '#8AE8E5',
+  accentSlight: 'rgba(35, 207, 200, 0.08)',
+  accentSuccess: 'rgba(35, 207, 200, 0.14)',
+  accentSoft: 'rgba(35, 207, 200, 0.16)',
+  accentSpeaking: 'rgba(35, 207, 200, 0.22)',
 
   formalCardBackground: '#303234',
   formalCardBorder: '#6A6D70',

@@ -62,11 +62,11 @@ const styles = StyleSheet.create({
   },
   buttonEnabled: {
     borderColor: colors.accent,
-    backgroundColor: 'rgba(35, 207, 200, 0.08)',
+    backgroundColor: colors.accentSlight,
   },
   buttonSpeaking: {
     borderColor: colors.accent,
-    backgroundColor: 'rgba(35, 207, 200, 0.22)',
+    backgroundColor: colors.accentSpeaking,
   },
   buttonPressed: {
     opacity: 0.88,
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   statePillEnabled: {
-    backgroundColor: 'rgba(35, 207, 200, 0.16)',
+    backgroundColor: colors.accentSoft,
   },
   statePillSpeaking: {
     backgroundColor: colors.accent,
