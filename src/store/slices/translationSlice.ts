@@ -6,7 +6,7 @@ export interface TranslationState {
 }
 
 const initialState: TranslationState = {
-  selectedMode: TranslationMode.RuToEn,
+  selectedMode: TranslationMode.RuToHe,
 };
 
 const translationSlice = createSlice({
