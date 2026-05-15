@@ -32,7 +32,9 @@ export function SoundButton({ isEnabled, isSpeaking, onPress }: SoundButtonProps
       ]}
     >
       <View style={styles.content}>
-        <Text style={styles.label}>{texts.home.soundButton.text.idle}</Text>
+        <Text style={[styles.label, isSpeaking && styles.labelSpeaking]}>
+          {texts.home.soundButton.text.idle}
+        </Text>
 
         <View style={[styles.statePill, isEnabled && styles.statePillEnabled, isSpeaking && styles.statePillSpeaking]}>
           <Text
@@ -64,7 +66,7 @@ const styles = StyleSheet.create({
   },
   buttonSpeaking: {
     borderColor: colors.accent,
-    backgroundColor: 'rgba(35, 207, 200, 0.14)',
+    backgroundColor: 'rgba(35, 207, 200, 0.22)',
   },
   buttonPressed: {
     opacity: 0.88,
@@ -81,6 +83,9 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     fontWeight: '700',
     color: colors.textPrimary,
+  },
+  labelSpeaking: {
+    color: colors.accent,
   },
   statePill: {
     minWidth: 46,

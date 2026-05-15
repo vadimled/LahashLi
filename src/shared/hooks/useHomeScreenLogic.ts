@@ -1,16 +1,51 @@
-import { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
+import { LayoutChangeEvent, ScrollView } from 'react-native';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { setIsSoundEnabled, setSoundErrorMessage } from '../../store/slices/uiSlice';
-import { useTranslationMode } from './useTranslationMode.ts';
-import { useVoiceFlow } from './useVoiceFlow.ts';
+import { useTranslationMode } from './useTranslationMode';
+import { useVoiceFlow } from './useVoiceFlow';
 import { useSpeechControl } from './useSpeechControl';
 import { useCopyTranslation } from './useCopyTranslation';
 import { useHomeScroll } from './useHomeScroll';
 import { texts } from '../../utils/texts';
 import { TranslationMode } from '../../utils/translationModes';
 import { getHighlightedRecognizedSpeech } from '../../utils/helpers';
+import { TranslationVariant } from '../../utils/openAiTranslation';
+import { RecordButtonStatus } from '../../utils/recordButton';
+import { TranslationCopyKey } from '../../utils/constants';
 
-export function useHomeScreenLogic() {
+export interface HomeScreenLogic {
+  selectedMode: TranslationMode;
+  setSelectedMode: (mode: TranslationMode) => void;
+  recordButtonStatus: RecordButtonStatus;
+  isListening: boolean;
+  isProcessing: boolean;
+  isSpeaking: boolean;
+  isSoundEnabled: boolean;
+  displayedErrorMessage?: string;
+  copiedKey: TranslationCopyKey | null;
+  recognizedSpeechLabel: string;
+  recognizedSpeechValue: string;
+  isRecognizedSpeechEmpty: boolean;
+  leadingText: string;
+  highlightedText: string;
+  translationEn?: TranslationVariant;
+  translationHe?: TranslationVariant;
+  translationRu?: TranslationVariant;
+  shouldShowEnglish: boolean;
+  shouldShowHebrew: boolean;
+  shouldShowRussian: boolean;
+  contentScrollRef: React.RefObject<ScrollView | null>;
+  recognizedSpeechScrollRef: React.RefObject<ScrollView | null>;
+  handleRecognizedSpeechContentSizeChange: () => void;
+  handleTranslationsSectionLayout: (event: LayoutChangeEvent) => void;
+  onPressRecordButton: () => void;
+  onPressSoundButton: () => void;
+  handleCopy: (key: TranslationCopyKey, value?: string) => void;
+  handlePlaySingleSound: (text: string, language: string) => Promise<boolean>;
+}
+
+export function useHomeScreenLogic(): HomeScreenLogic {
   const dispatch = useAppDispatch();
   const { soundErrorMessage } = useAppSelector((state) => state.ui);
   const { selectedMode, setSelectedMode } = useTranslationMode();
@@ -153,6 +188,6 @@ export function useHomeScreenLogic() {
     onPressRecordButton,
     onPressSoundButton,
     handleCopy,
-    handlePlaySingleSound: speakSingleText,
+    handlePlaySingleSound: (text: string, language: string): Promise<boolean> => speakSingleText(text, language),
   };
 }

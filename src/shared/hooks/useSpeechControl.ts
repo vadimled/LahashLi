@@ -62,15 +62,17 @@ export function useSpeechControl({
       await stopSpeaking();
       clearSpeechState();
 
-      const utteranceIds = await speakSpeechQueue(currentSpeechQueue);
-      activeSpeechIdsRef.current = new Set(utteranceIds);
+      dispatch(setIsSpeaking(true));
+
+      const utteranceIds = await speakSpeechQueue(currentSpeechQueue, (id) => {
+        activeSpeechIdsRef.current.add(id);
+      });
 
       if (!utteranceIds.length) {
         dispatch(setIsSpeaking(false));
         return false;
       }
 
-      dispatch(setIsSpeaking(true));
       return true;
     } catch (error) {
       clearSpeechState();
@@ -91,15 +93,17 @@ export function useSpeechControl({
       await stopSpeaking();
       clearSpeechState();
 
-      const utteranceIds = await speakSpeechQueue([{ text, language }]);
-      activeSpeechIdsRef.current = new Set(utteranceIds);
+      dispatch(setIsSpeaking(true));
+
+      const utteranceIds = await speakSpeechQueue([{ text, language }], (id) => {
+        activeSpeechIdsRef.current.add(id);
+      });
 
       if (!utteranceIds.length) {
         dispatch(setIsSpeaking(false));
         return false;
       }
 
-      dispatch(setIsSpeaking(true));
       return true;
     } catch (error) {
       clearSpeechState();

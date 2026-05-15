@@ -2,8 +2,8 @@ import { JSX } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { UITextView } from 'react-native-uitextview';
 
-import { colors } from '../../theme/colors.ts';
-import { texts } from '../../utils/texts.ts';
+import { colors } from '../../theme/colors';
+import { texts } from '../../utils/texts';
 
 type TranslationCardProps = {
   languageLabel: string;

@@ -6,7 +6,7 @@ import { ModeSelector } from '../../shared/ui/ModeSelector';
 import { Screen } from '../../shared/ui/Screen';
 import { TranslationCard } from '../../shared/ui/TranslationCard';
 import { colors } from '../../theme/colors';
-import { CONTENT_BOTTOM_PADDING, RECOGNIZED_SPEECH_CONTENT_HEIGHT, TranslationCopyKey } from '../../utils/constants.ts';
+import { CONTENT_BOTTOM_PADDING, RECOGNIZED_SPEECH_CONTENT_HEIGHT, TranslationCopyKey } from '../../utils/constants';
 import { ENGLISH_LANGUAGE, HEBREW_LANGUAGE, RUSSIAN_LANGUAGE } from '../../utils/textToSpeech';
 import { texts } from '../../utils/texts';
 import { useHomeScreenLogic } from '../../shared/hooks/useHomeScreenLogic';
