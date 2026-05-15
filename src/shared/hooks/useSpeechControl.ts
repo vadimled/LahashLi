@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import Speech from '@mhpdev/react-native-speech';
 import { useAppDispatch, useAppSelector } from '../../store';
-import { setIsSpeaking, setSoundErrorMessage } from '../../store/slices/uiSlice';
+import { setIsSpeaking, setSoundErrorMessage, setSpeakingMetadata } from '../../store/slices/uiSlice';
 import { buildSpeechQueue, createSpeechSignature, speakSpeechQueue, stopSpeaking } from '../../utils/textToSpeech';
 import { texts } from '../../utils/texts';
 import { TranslationMode } from '../../utils/translationModes';
@@ -23,9 +23,10 @@ export function useSpeechControl({
   isProcessing,
 }: UseSpeechControlProps) {
   const dispatch = useAppDispatch();
-  const { isSoundEnabled, isSpeaking } = useAppSelector((state) => state.ui);
+  const { isSoundEnabled, isSpeaking, speakingText, speakingLanguage } = useAppSelector((state) => state.ui);
 
   const activeSpeechIdsRef = useRef<Set<string>>(new Set());
+  const utteranceMapRef = useRef<Map<string, { text: string; language: string }>>(new Map());
   const lastAutoSpokenSignatureRef = useRef('');
 
   const currentSpeechQueue = buildSpeechQueue({
@@ -39,7 +40,9 @@ export function useSpeechControl({
 
   const clearSpeechState = useCallback((): void => {
     activeSpeechIdsRef.current.clear();
+    utteranceMapRef.current.clear();
     dispatch(setIsSpeaking(false));
+    dispatch(setSpeakingMetadata({}));
   }, [dispatch]);
 
   const stopCurrentSpeech = useCallback(async (): Promise<void> => {
@@ -64,12 +67,14 @@ export function useSpeechControl({
 
       dispatch(setIsSpeaking(true));
 
-      const utteranceIds = await speakSpeechQueue(currentSpeechQueue, (id) => {
+      const utteranceIds = await speakSpeechQueue(currentSpeechQueue, (id, chunk) => {
         activeSpeechIdsRef.current.add(id);
+        utteranceMapRef.current.set(id, { text: chunk.text, language: chunk.language });
       });
 
       if (!utteranceIds.length) {
         dispatch(setIsSpeaking(false));
+        dispatch(setSpeakingMetadata({}));
         return false;
       }
 
@@ -95,12 +100,14 @@ export function useSpeechControl({
 
       dispatch(setIsSpeaking(true));
 
-      const utteranceIds = await speakSpeechQueue([{ text, language }], (id) => {
+      const utteranceIds = await speakSpeechQueue([{ text, language }], (id, chunk) => {
         activeSpeechIdsRef.current.add(id);
+        utteranceMapRef.current.set(id, { text: chunk.text, language: chunk.language });
       });
 
       if (!utteranceIds.length) {
         dispatch(setIsSpeaking(false));
+        dispatch(setSpeakingMetadata({}));
         return false;
       }
 
@@ -118,6 +125,10 @@ export function useSpeechControl({
     const startSubscription = Speech.onStart(({ id }) => {
       if (activeSpeechIdsRef.current.has(id)) {
         dispatch(setIsSpeaking(true));
+        const metadata = utteranceMapRef.current.get(id);
+        if (metadata) {
+          dispatch(setSpeakingMetadata(metadata));
+        }
       }
     });
 
@@ -126,26 +137,33 @@ export function useSpeechControl({
         return;
       }
       activeSpeechIdsRef.current.delete(id);
+      utteranceMapRef.current.delete(id);
+
       if (activeSpeechIdsRef.current.size === 0) {
         dispatch(setIsSpeaking(false));
+        dispatch(setSpeakingMetadata({}));
       }
     });
 
     const stoppedSubscription = Speech.onStopped(({ id }) => {
       if (activeSpeechIdsRef.current.has(id)) {
         activeSpeechIdsRef.current.delete(id);
+        utteranceMapRef.current.delete(id);
       }
       if (activeSpeechIdsRef.current.size === 0) {
         dispatch(setIsSpeaking(false));
+        dispatch(setSpeakingMetadata({}));
       }
     });
 
     const errorSubscription = Speech.onError(({ id }) => {
       if (activeSpeechIdsRef.current.has(id)) {
         activeSpeechIdsRef.current.delete(id);
+        utteranceMapRef.current.delete(id);
       }
       if (activeSpeechIdsRef.current.size === 0) {
         dispatch(setIsSpeaking(false));
+        dispatch(setSpeakingMetadata({}));
       }
       dispatch(setSoundErrorMessage(texts.home.soundButton.error.playbackFailed));
     });
@@ -181,6 +199,8 @@ export function useSpeechControl({
   return {
     isSpeaking,
     isSoundEnabled,
+    speakingText,
+    speakingLanguage,
     currentSpeechSignature,
     stopCurrentSpeech,
     speakCurrentTranslations,

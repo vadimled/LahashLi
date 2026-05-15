@@ -16,6 +16,7 @@ type TranslationCardProps = {
   isCopyDisabled: boolean;
   onPlaySound: () => void;
   isPlaySoundDisabled: boolean;
+  isSpeaking: boolean;
 };
 
 export function TranslationCard({
@@ -29,6 +30,7 @@ export function TranslationCard({
   isCopyDisabled,
   onPlaySound,
   isPlaySoundDisabled,
+  isSpeaking,
 }: TranslationCardProps): JSX.Element {
   const isEmpty = !value;
   const isCasual = variantLabel.toLowerCase() === texts.home.translationVariants.casual.toLowerCase();
@@ -64,10 +66,19 @@ export function TranslationCard({
             style={({ pressed }) => [
               styles.soundButton,
               isPlaySoundDisabled && styles.copyButtonDisabled,
+              isSpeaking && styles.soundButtonSpeaking,
               pressed && !isPlaySoundDisabled && styles.copyButtonPressed,
             ]}
           >
-            <Text style={[styles.soundButtonIcon, isPlaySoundDisabled && styles.copyButtonTextDisabled]}>🔊</Text>
+            <Text
+              style={[
+                styles.soundButtonIcon,
+                isPlaySoundDisabled && styles.copyButtonTextDisabled,
+                isSpeaking && styles.soundButtonIconSpeaking,
+              ]}
+            >
+              🔊
+            </Text>
           </Pressable>
 
           <Pressable
@@ -199,7 +210,7 @@ const styles = StyleSheet.create({
   },
   copyButtonSuccess: {
     borderColor: colors.accent,
-    backgroundColor: 'rgba(35, 207, 200, 0.14)',
+    backgroundColor: colors.accentSuccess,
   },
   copyButtonText: {
     fontSize: 12,
@@ -226,6 +237,13 @@ const styles = StyleSheet.create({
   soundButtonIcon: {
     fontSize: 14,
     color: colors.textSecondary,
+  },
+  soundButtonSpeaking: {
+    borderColor: colors.accent,
+    backgroundColor: colors.accentSpeaking,
+  },
+  soundButtonIconSpeaking: {
+    color: colors.accent,
   },
   translationValue: {
     fontSize: 19,

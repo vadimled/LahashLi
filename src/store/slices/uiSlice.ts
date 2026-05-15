@@ -6,6 +6,8 @@ export interface UiState {
   isSpeaking: boolean;
   soundErrorMessage?: string;
   copiedKey: TranslationCopyKey | null;
+  speakingText?: string;
+  speakingLanguage?: string;
 }
 
 const initialState: UiState = {
@@ -30,6 +32,10 @@ const uiSlice = createSlice({
     setCopiedKey(state, action: PayloadAction<TranslationCopyKey | null>) {
       state.copiedKey = action.payload;
     },
+    setSpeakingMetadata(state, action: PayloadAction<{ text?: string; language?: string }>) {
+      state.speakingText = action.payload.text;
+      state.speakingLanguage = action.payload.language;
+    },
   },
 });
 
@@ -38,6 +44,7 @@ export const {
   setIsSpeaking,
   setSoundErrorMessage,
   setCopiedKey,
+  setSpeakingMetadata,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

@@ -84,7 +84,7 @@ export function createSpeechSignature(chunks: SpeechChunk[]): string {
 
 export async function speakSpeechQueue(
   chunks: SpeechChunk[],
-  onIdCreated?: (id: string) => void,
+  onIdCreated?: (id: string, chunk: SpeechChunk) => void,
 ): Promise<string[]> {
   const utteranceIds: string[] = [];
 
@@ -96,7 +96,7 @@ export async function speakSpeechQueue(
     });
 
     utteranceIds.push(utteranceId);
-    onIdCreated?.(utteranceId);
+    onIdCreated?.(utteranceId, chunk);
   }
 
   return utteranceIds;

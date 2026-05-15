@@ -22,6 +22,8 @@ export interface HomeScreenLogic {
   isProcessing: boolean;
   isSpeaking: boolean;
   isSoundEnabled: boolean;
+  speakingText?: string;
+  speakingLanguage?: string;
   displayedErrorMessage?: string;
   copiedKey: TranslationCopyKey | null;
   recognizedSpeechLabel: string;
@@ -67,6 +69,8 @@ export function useHomeScreenLogic(): HomeScreenLogic {
   const {
     isSpeaking,
     isSoundEnabled,
+    speakingText,
+    speakingLanguage,
     stopCurrentSpeech,
     speakSingleText,
   } = useSpeechControl({
@@ -166,6 +170,8 @@ export function useHomeScreenLogic(): HomeScreenLogic {
     isProcessing,
     isSpeaking,
     isSoundEnabled,
+    speakingText,
+    speakingLanguage,
     displayedErrorMessage,
     copiedKey,
     // Content
