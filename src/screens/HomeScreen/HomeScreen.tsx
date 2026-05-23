@@ -46,6 +46,7 @@ export function HomeScreen(): React.JSX.Element {
     handlePlaySingleSound,
     handleTranscriptChange,
     handleTranslate,
+    handleClearAll,
   } = useHomeScreenLogic();
 
   return (
@@ -76,7 +77,15 @@ export function HomeScreen(): React.JSX.Element {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.recognizedSpeechCard}>
-          <Text style={styles.recognizedSpeechTitle}>{texts.home.recognizedSpeech.title}</Text>
+          <View style={styles.recognizedSpeechTitleRow}>
+            <Text style={styles.recognizedSpeechTitle}>{texts.home.recognizedSpeech.title}</Text>
+            <Pressable
+              onPress={handleClearAll}
+              style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}
+            >
+              <Text style={styles.clearButtonText}>{texts.home.clearAllButton}</Text>
+            </Pressable>
+          </View>
 
           <View style={styles.recognizedSpeechHeader}>
             <Text
@@ -340,6 +349,23 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: '700',
     color: colors.textPrimary,
+  },
+  recognizedSpeechTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  clearButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  clearButtonPressed: {
+    opacity: 0.6,
+  },
+  clearButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.accent,
   },
   recognizedSpeechBlock: {
     gap: 8,

@@ -28,6 +28,7 @@ type UseVoiceFlowReturn = {
   handleRecordButtonPress: () => Promise<void>;
   handleTranscriptChange: (text: string) => void;
   handleTranslate: () => void;
+  handleClearAll: () => void;
 };
 
 const FINAL_RESULT_TIMEOUT_MS = 1800;
@@ -163,6 +164,10 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
       dispatch(translateTranscript({ transcript: voiceState.transcript, mode: selectedMode }));
     }
   }, [voiceState.transcript, selectedMode, dispatch]);
+  const handleClearAll = useCallback((): void => {
+    dispatch(resetVoiceState());
+    resetTranscript();
+  }, [dispatch, resetTranscript]);
 
   return {
     recordButtonStatus: voiceState.status,
@@ -175,5 +180,6 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
     handleRecordButtonPress,
     handleTranscriptChange,
     handleTranslate,
+    handleClearAll,
   };
 }

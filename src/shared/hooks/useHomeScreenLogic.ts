@@ -48,6 +48,7 @@ export interface HomeScreenLogic {
   handlePlaySingleSound: (text: string, language: string) => Promise<boolean>;
   handleTranscriptChange: (text: string) => void;
   handleTranslate: () => void;
+  handleClearAll: () => void;
 }
 
 export function useHomeScreenLogic(): HomeScreenLogic {
@@ -66,6 +67,7 @@ export function useHomeScreenLogic(): HomeScreenLogic {
     handleRecordButtonPress,
     handleTranscriptChange,
     handleTranslate,
+    handleClearAll,
   } = useVoiceFlow(selectedMode);
 
   const isListening = recordButtonStatus === 'listening';
@@ -207,5 +209,6 @@ export function useHomeScreenLogic(): HomeScreenLogic {
     handlePlaySingleSound: (text: string, language: string): Promise<boolean> => speakSingleText(text, language),
     handleTranscriptChange,
     handleTranslate,
+    handleClearAll,
   };
 }

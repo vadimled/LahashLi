@@ -5,6 +5,7 @@ export const texts = {
   },
   home: {
     translationsLabel: 'Translations',
+    clearAllButton: 'Clear All',
     translationVariants: {
       formal: 'Formal',
       casual: 'Casual',
