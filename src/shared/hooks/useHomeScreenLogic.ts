@@ -28,6 +28,7 @@ export interface HomeScreenLogic {
   copiedKey: TranslationCopyKey | null;
   recognizedSpeechLabel: string;
   recognizedSpeechValue: string;
+  recognizedSpeechPlaceholder: string;
   isRecognizedSpeechEmpty: boolean;
   leadingText: string;
   highlightedText: string;
@@ -45,12 +46,17 @@ export interface HomeScreenLogic {
   onPressSoundButton: () => void;
   handleCopy: (key: TranslationCopyKey, value?: string) => void;
   handlePlaySingleSound: (text: string, language: string) => Promise<boolean>;
+  handleTranscriptChange: (text: string) => void;
+  handleTranslate: () => void;
+  handleClearAll: () => void;
+  recognizedSpeechTitle: string;
 }
 
 export function useHomeScreenLogic(): HomeScreenLogic {
   const dispatch = useAppDispatch();
   const { soundErrorMessage } = useAppSelector((state) => state.ui);
   const { selectedMode, setSelectedMode } = useTranslationMode();
+  const { inputSource } = useAppSelector((state) => state.voice);
 
   const {
     recordButtonStatus,
@@ -61,6 +67,9 @@ export function useHomeScreenLogic(): HomeScreenLogic {
     translationRu,
     errorMessage,
     handleRecordButtonPress,
+    handleTranscriptChange,
+    handleTranslate,
+    handleClearAll,
   } = useVoiceFlow(selectedMode);
 
   const isListening = recordButtonStatus === 'listening';
@@ -82,14 +91,22 @@ export function useHomeScreenLogic(): HomeScreenLogic {
   });
 
   const { copiedKey, handleCopy, clearCopiedState } = useCopyTranslation();
+  
+  const recognizedSpeechTitle = inputSource === 'clipboard'
+    ? texts.home.recognizedSpeech.manualInputTitle
+    : texts.home.recognizedSpeech.title;
 
   const recognizedSpeechLabel = isListening
     ? texts.home.recognizedSpeech.liveLabel
     : texts.home.recognizedSpeech.finalLabel;
 
   const recognizedSpeechValue = isListening
-    ? liveTranscript || texts.home.recognizedSpeech.emptyLive
-    : transcript || texts.home.recognizedSpeech.emptyFinal;
+    ? liveTranscript ?? ''
+    : transcript ?? '';
+
+  const recognizedSpeechPlaceholder = isListening
+    ? texts.home.recognizedSpeech.emptyLive
+    : texts.home.recognizedSpeech.emptyFinal;
 
   const {
     contentScrollRef,
@@ -177,6 +194,7 @@ export function useHomeScreenLogic(): HomeScreenLogic {
     // Content
     recognizedSpeechLabel,
     recognizedSpeechValue,
+    recognizedSpeechPlaceholder,
     isRecognizedSpeechEmpty,
     leadingText,
     highlightedText,
@@ -195,5 +213,9 @@ export function useHomeScreenLogic(): HomeScreenLogic {
     onPressSoundButton,
     handleCopy,
     handlePlaySingleSound: (text: string, language: string): Promise<boolean> => speakSingleText(text, language),
+    handleTranscriptChange,
+    handleTranslate,
+    handleClearAll,
+    recognizedSpeechTitle,
   };
 }

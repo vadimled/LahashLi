@@ -5,6 +5,7 @@ export const texts = {
   },
   home: {
     translationsLabel: 'Translations',
+    clearAllButton: 'Clear All',
     translationVariants: {
       formal: 'Formal',
       casual: 'Casual',
@@ -38,10 +39,16 @@ export const texts = {
     },
     recognizedSpeech: {
       title: 'Recognized speech',
+      manualInputTitle: 'Text for translation',
       liveLabel: 'Live',
       finalLabel: 'Final',
       emptyLive: 'Start speaking to see live recognition.',
       emptyFinal: 'Final recognized phrase will appear here.',
+      translateButton: 'Translate',
+      copyButton: {
+        idle: 'Copy',
+        success: 'Copied',
+      },
     },
     recordButton: {
       text: {

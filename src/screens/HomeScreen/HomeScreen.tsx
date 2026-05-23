@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { UITextView } from 'react-native-uitextview';
 import { Header } from '../../shared/ui/Header';
 import { ModeSelector } from '../../shared/ui/ModeSelector';
@@ -24,8 +24,10 @@ export function HomeScreen(): React.JSX.Element {
     speakingLanguage,
     displayedErrorMessage,
     copiedKey,
+    recognizedSpeechTitle,
     recognizedSpeechLabel,
     recognizedSpeechValue,
+    recognizedSpeechPlaceholder,
     isRecognizedSpeechEmpty,
     leadingText,
     highlightedText,
@@ -43,6 +45,9 @@ export function HomeScreen(): React.JSX.Element {
     onPressSoundButton,
     handleCopy,
     handlePlaySingleSound,
+    handleTranscriptChange,
+    handleTranslate,
+    handleClearAll,
   } = useHomeScreenLogic();
 
   return (
@@ -73,9 +78,22 @@ export function HomeScreen(): React.JSX.Element {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.recognizedSpeechCard}>
-          <Text style={styles.recognizedSpeechTitle}>{texts.home.recognizedSpeech.title}</Text>
+          <View style={styles.recognizedSpeechTitleRow}>
+            <Text style={styles.recognizedSpeechTitle}>{recognizedSpeechTitle}</Text>
+          </View>
 
-          <View style={styles.recognizedSpeechBlock}>
+          <View style={styles.recognizedSpeechHeader}>
+            <View style={styles.clearButtonContainer} pointerEvents="box-none">
+              {!isRecognizedSpeechEmpty && (
+                <Pressable
+                  onPress={handleClearAll}
+                  style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}
+                >
+                  <Text style={styles.clearButtonText}>{texts.home.clearAllButton}</Text>
+                </Pressable>
+              )}
+            </View>
+
             <Text
               style={[
                 styles.recognizedSpeechLabel,
@@ -85,30 +103,78 @@ export function HomeScreen(): React.JSX.Element {
               {recognizedSpeechLabel}
             </Text>
 
-            <View style={styles.recognizedSpeechContentFrame}>
-              <ScrollView
-                ref={recognizedSpeechScrollRef}
-                contentContainerStyle={styles.recognizedSpeechScrollContent}
-                onContentSizeChange={handleRecognizedSpeechContentSizeChange}
-                showsVerticalScrollIndicator={false}
+            <View style={styles.recognizedSpeechHeaderActions}>
+              <Pressable
+                onPress={() => handleCopy(TranslationCopyKey.RecognizedSpeech, recognizedSpeechValue)}
+                disabled={isRecognizedSpeechEmpty}
+                style={({ pressed }) => [
+                  styles.copyButton,
+                  copiedKey === TranslationCopyKey.RecognizedSpeech && styles.copyButtonSuccess,
+                  isRecognizedSpeechEmpty && styles.copyButtonDisabled,
+                  pressed && !isRecognizedSpeechEmpty && styles.copyButtonPressed,
+                ]}
               >
-                {isRecognizedSpeechEmpty ? (
-                  <Text style={[styles.recognizedSpeechValue, styles.recognizedSpeechValueEmpty]}>
-                    {recognizedSpeechValue}
-                  </Text>
-                ) : isListening ? (
-                  <UITextView style={styles.recognizedSpeechValue}>
-                    <Text style={styles.recognizedSpeechValue}>{leadingText}</Text>
-                    <Text style={[styles.recognizedSpeechValue, styles.recognizedSpeechValueHighlighted]}>
-                      {highlightedText}
-                    </Text>
-                  </UITextView>
-                ) : (
-                  <UITextView style={styles.recognizedSpeechValue}>{recognizedSpeechValue}</UITextView>
-                )}
-              </ScrollView>
+                <Text
+                  style={[
+                    styles.copyButtonText,
+                    copiedKey === TranslationCopyKey.RecognizedSpeech && styles.copyButtonTextSuccess,
+                    isRecognizedSpeechEmpty && styles.copyButtonTextDisabled,
+                  ]}
+                >
+                  {copiedKey === TranslationCopyKey.RecognizedSpeech
+                    ? texts.home.recognizedSpeech.copyButton.success
+                    : texts.home.recognizedSpeech.copyButton.idle}
+                </Text>
+              </Pressable>
             </View>
           </View>
+
+          <View style={styles.recognizedSpeechContentFrame}>
+            <ScrollView
+              ref={recognizedSpeechScrollRef}
+              contentContainerStyle={styles.recognizedSpeechScrollContent}
+              onContentSizeChange={handleRecognizedSpeechContentSizeChange}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {isListening ? (
+                <UITextView style={styles.recognizedSpeechValue}>
+                  {isRecognizedSpeechEmpty ? (
+                    <Text style={[styles.recognizedSpeechValue, styles.recognizedSpeechValueEmpty]}>
+                      {recognizedSpeechPlaceholder}
+                    </Text>
+                  ) : (
+                    <>
+                      <Text style={styles.recognizedSpeechValue}>{leadingText}</Text>
+                      <Text style={[styles.recognizedSpeechValue, styles.recognizedSpeechValueHighlighted]}>
+                        {highlightedText}
+                      </Text>
+                    </>
+                  )}
+                </UITextView>
+              ) : (
+                <TextInput
+                  style={[styles.recognizedSpeechValue, isRecognizedSpeechEmpty && styles.recognizedSpeechValueEmpty]}
+                  editable={!isProcessing}
+                  onChangeText={handleTranscriptChange}
+                  multiline
+                  scrollEnabled={false}
+                  placeholder={recognizedSpeechPlaceholder}
+                  placeholderTextColor={colors.textMuted}
+                  value={recognizedSpeechValue}
+                />
+              )}
+            </ScrollView>
+          </View>
+
+          {!isListening && !isRecognizedSpeechEmpty && recordButtonStatus === 'idle' && (
+            <Pressable
+              onPress={handleTranslate}
+              style={({ pressed }) => [styles.translateButton, pressed && styles.translateButtonPressed]}
+            >
+              <Text style={styles.translateButtonText}>{texts.home.recognizedSpeech.translateButton}</Text>
+            </Pressable>
+          )}
         </View>
 
         {shouldShowEnglish || shouldShowHebrew || shouldShowRussian ? (
@@ -290,8 +356,61 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.textPrimary,
   },
+  recognizedSpeechTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  clearButtonContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  clearButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    minHeight: 32,
+    justifyContent: 'center',
+  },
+  clearButtonPressed: {
+    opacity: 0.6,
+  },
+  clearButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.accent,
+  },
   recognizedSpeechBlock: {
     gap: 8,
+  },
+  recognizedSpeechHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  recognizedSpeechHeaderActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  translateButton: {
+    backgroundColor: colors.accent,
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  translateButtonPressed: {
+    opacity: 0.8,
+  },
+  translateButtonText: {
+    color: colors.background,
+    fontSize: 14,
+    fontWeight: '600',
   },
   recognizedSpeechLabel: {
     fontSize: 12,
@@ -322,6 +441,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     padding: 0,
     margin: 0,
+    textAlignVertical: 'top',
   },
   recognizedSpeechValueHighlighted: {
     color: colors.accent,
@@ -344,5 +464,35 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 1,
+  },
+  copyButton: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  copyButtonSuccess: {
+    borderColor: colors.accent,
+    backgroundColor: colors.accentSuccess,
+  },
+  copyButtonDisabled: {
+    opacity: 0.5,
+  },
+  copyButtonPressed: {
+    backgroundColor: colors.backgroundSecondary,
+  },
+  copyButtonText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+  },
+  copyButtonTextSuccess: {
+    color: colors.accent,
+  },
+  copyButtonTextDisabled: {
+    color: colors.textMuted,
   },
 });
