@@ -80,15 +80,20 @@ export function HomeScreen(): React.JSX.Element {
         <View style={styles.recognizedSpeechCard}>
           <View style={styles.recognizedSpeechTitleRow}>
             <Text style={styles.recognizedSpeechTitle}>{recognizedSpeechTitle}</Text>
-            <Pressable
-              onPress={handleClearAll}
-              style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}
-            >
-              <Text style={styles.clearButtonText}>{texts.home.clearAllButton}</Text>
-            </Pressable>
           </View>
 
           <View style={styles.recognizedSpeechHeader}>
+            <View style={styles.clearButtonContainer} pointerEvents="box-none">
+              {!isRecognizedSpeechEmpty && (
+                <Pressable
+                  onPress={handleClearAll}
+                  style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}
+                >
+                  <Text style={styles.clearButtonText}>{texts.home.clearAllButton}</Text>
+                </Pressable>
+              )}
+            </View>
+
             <Text
               style={[
                 styles.recognizedSpeechLabel,
@@ -356,9 +361,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  clearButtonContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   clearButton: {
     paddingHorizontal: 8,
     paddingVertical: 4,
+    minHeight: 32,
+    justifyContent: 'center',
   },
   clearButtonPressed: {
     opacity: 0.6,
@@ -375,6 +391,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    position: 'relative',
   },
   recognizedSpeechHeaderActions: {
     flexDirection: 'row',
