@@ -75,6 +75,9 @@ const voiceSlice = createSlice({
     setErrorMessage(state, action: PayloadAction<string | undefined>) {
       state.errorMessage = action.payload;
     },
+    setTranscript(state, action: PayloadAction<string>) {
+      state.transcript = action.payload;
+    },
     resetVoiceState(state) {
       state.status = 'idle';
       state.transcript = undefined;
@@ -111,6 +114,7 @@ export const {
   setLiveTranscript,
   setTranslationResult,
   setErrorMessage,
+  setTranscript,
   resetVoiceState,
 } = voiceSlice.actions;
 

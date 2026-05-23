@@ -14,6 +14,7 @@ import {
   resetVoiceState,
   translateTranscript,
   setTranslationResult,
+  setTranscript,
 } from '../../store/slices/voiceSlice';
 
 type UseVoiceFlowReturn = {
@@ -25,6 +26,8 @@ type UseVoiceFlowReturn = {
   translationRu?: TranslationVariant;
   errorMessage?: string;
   handleRecordButtonPress: () => Promise<void>;
+  handleTranscriptChange: (text: string) => void;
+  handleTranslate: () => void;
 };
 
 const FINAL_RESULT_TIMEOUT_MS = 1800;
@@ -151,6 +154,16 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
     }
   }, [available, clearFinalResultTimeout, resetTranscript, startListening, stopListening, voiceState.status, dispatch]);
 
+  const handleTranscriptChange = useCallback((text: string): void => {
+    dispatch(setTranscript(text));
+  }, [dispatch]);
+
+  const handleTranslate = useCallback((): void => {
+    if (voiceState.transcript && voiceState.transcript.trim()) {
+      dispatch(translateTranscript({ transcript: voiceState.transcript, mode: selectedMode }));
+    }
+  }, [voiceState.transcript, selectedMode, dispatch]);
+
   return {
     recordButtonStatus: voiceState.status,
     transcript: voiceState.transcript,
@@ -160,5 +173,7 @@ export function useVoiceFlow(selectedMode: TranslationMode): UseVoiceFlowReturn 
     translationRu: voiceState.translationRu,
     errorMessage: voiceState.errorMessage,
     handleRecordButtonPress,
+    handleTranscriptChange,
+    handleTranslate,
   };
 }

@@ -42,6 +42,11 @@ export const texts = {
       finalLabel: 'Final',
       emptyLive: 'Start speaking to see live recognition.',
       emptyFinal: 'Final recognized phrase will appear here.',
+      translateButton: 'Translate',
+      copyButton: {
+        idle: 'Copy',
+        success: 'Copied',
+      },
     },
     recordButton: {
       text: {

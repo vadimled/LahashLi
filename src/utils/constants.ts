@@ -5,6 +5,7 @@ export enum TranslationCopyKey {
   HebrewCasual = 'hebrew-casual',
   RussianFormal = 'russian-formal',
   RussianCasual = 'russian-casual',
+  RecognizedSpeech = 'recognized-speech',
 }
 
 export const RECOGNIZED_SPEECH_CONTENT_HEIGHT = 116;
