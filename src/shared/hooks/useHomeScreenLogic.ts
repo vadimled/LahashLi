@@ -49,12 +49,14 @@ export interface HomeScreenLogic {
   handleTranscriptChange: (text: string) => void;
   handleTranslate: () => void;
   handleClearAll: () => void;
+  recognizedSpeechTitle: string;
 }
 
 export function useHomeScreenLogic(): HomeScreenLogic {
   const dispatch = useAppDispatch();
   const { soundErrorMessage } = useAppSelector((state) => state.ui);
   const { selectedMode, setSelectedMode } = useTranslationMode();
+  const { inputSource } = useAppSelector((state) => state.voice);
 
   const {
     recordButtonStatus,
@@ -89,6 +91,10 @@ export function useHomeScreenLogic(): HomeScreenLogic {
   });
 
   const { copiedKey, handleCopy, clearCopiedState } = useCopyTranslation();
+  
+  const recognizedSpeechTitle = inputSource === 'clipboard'
+    ? texts.home.recognizedSpeech.manualInputTitle
+    : texts.home.recognizedSpeech.title;
 
   const recognizedSpeechLabel = isListening
     ? texts.home.recognizedSpeech.liveLabel
@@ -210,5 +216,6 @@ export function useHomeScreenLogic(): HomeScreenLogic {
     handleTranscriptChange,
     handleTranslate,
     handleClearAll,
+    recognizedSpeechTitle,
   };
 }

@@ -39,6 +39,7 @@ export const texts = {
     },
     recognizedSpeech: {
       title: 'Recognized speech',
+      manualInputTitle: 'Text for translation',
       liveLabel: 'Live',
       finalLabel: 'Final',
       emptyLive: 'Start speaking to see live recognition.',

@@ -24,6 +24,7 @@ export function HomeScreen(): React.JSX.Element {
     speakingLanguage,
     displayedErrorMessage,
     copiedKey,
+    recognizedSpeechTitle,
     recognizedSpeechLabel,
     recognizedSpeechValue,
     recognizedSpeechPlaceholder,
@@ -78,7 +79,7 @@ export function HomeScreen(): React.JSX.Element {
       >
         <View style={styles.recognizedSpeechCard}>
           <View style={styles.recognizedSpeechTitleRow}>
-            <Text style={styles.recognizedSpeechTitle}>{texts.home.recognizedSpeech.title}</Text>
+            <Text style={styles.recognizedSpeechTitle}>{recognizedSpeechTitle}</Text>
             <Pressable
               onPress={handleClearAll}
               style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}

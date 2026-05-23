@@ -8,6 +8,7 @@ import { texts } from '../../utils/texts';
 
 export interface VoiceState {
   status: RecordButtonStatus;
+  inputSource?: 'voice' | 'clipboard';
   transcript?: string;
   liveTranscript?: string;
   translationEn?: TranslationVariant;
@@ -52,6 +53,7 @@ const voiceSlice = createSlice({
     },
     setLiveTranscript(state, action: PayloadAction<string>) {
       state.liveTranscript = action.payload;
+      state.inputSource = 'voice';
     },
     setTranslationResult(
       state,
@@ -71,15 +73,20 @@ const voiceSlice = createSlice({
       state.translationRu = translationRu;
       state.errorMessage = errorMessage;
       state.liveTranscript = undefined;
+      if (transcript) {
+        state.inputSource = 'voice';
+      }
     },
     setErrorMessage(state, action: PayloadAction<string | undefined>) {
       state.errorMessage = action.payload;
     },
     setTranscript(state, action: PayloadAction<string>) {
       state.transcript = action.payload;
+      state.inputSource = 'clipboard';
     },
     resetVoiceState(state) {
       state.status = 'idle';
+      state.inputSource = undefined;
       state.transcript = undefined;
       state.liveTranscript = undefined;
       state.translationEn = undefined;
@@ -96,6 +103,7 @@ const voiceSlice = createSlice({
       .addCase(translateTranscript.fulfilled, (state, action) => {
         state.status = 'idle';
         state.transcript = action.payload.source;
+        state.inputSource = 'voice';
         state.translationEn = action.payload.translationEn;
         state.translationHe = action.payload.translationHe;
         state.translationRu = action.payload.translationRu;
