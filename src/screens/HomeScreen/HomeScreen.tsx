@@ -194,10 +194,10 @@ export function HomeScreen(): React.JSX.Element {
                   isCopied={copiedKey === TranslationCopyKey.EnglishFormal}
                   isCopyDisabled={!translationEn?.formal}
                   onPlaySound={() => {
-                    handlePlaySingleSound(translationEn?.formal ?? '', ENGLISH_LANGUAGE);
+                    handlePlaySingleSound(translationEn?.formalTts || translationEn?.formal || '', ENGLISH_LANGUAGE);
                   }}
                   isPlaySoundDisabled={!translationEn?.formal}
-                  isSpeaking={isSpeaking && speakingText === translationEn?.formal && speakingLanguage === ENGLISH_LANGUAGE}
+                  isSpeaking={isSpeaking && (speakingText === translationEn?.formal || speakingText === translationEn?.formalTts) && speakingLanguage === ENGLISH_LANGUAGE}
                 />
 
                 <TranslationCard
@@ -211,10 +211,10 @@ export function HomeScreen(): React.JSX.Element {
                   isCopied={copiedKey === TranslationCopyKey.EnglishCasual}
                   isCopyDisabled={!translationEn?.casual}
                   onPlaySound={() => {
-                    handlePlaySingleSound(translationEn?.casual ?? '', ENGLISH_LANGUAGE);
+                    handlePlaySingleSound(translationEn?.casualTts || translationEn?.casual || '', ENGLISH_LANGUAGE);
                   }}
                   isPlaySoundDisabled={!translationEn?.casual}
-                  isSpeaking={isSpeaking && speakingText === translationEn?.casual && speakingLanguage === ENGLISH_LANGUAGE}
+                  isSpeaking={isSpeaking && (speakingText === translationEn?.casual || speakingText === translationEn?.casualTts) && speakingLanguage === ENGLISH_LANGUAGE}
                 />
               </>
             ) : null}
@@ -233,10 +233,10 @@ export function HomeScreen(): React.JSX.Element {
                   isCopied={copiedKey === TranslationCopyKey.HebrewFormal}
                   isCopyDisabled={!translationHe?.formal}
                   onPlaySound={() => {
-                    handlePlaySingleSound(translationHe?.formal ?? '', HEBREW_LANGUAGE);
+                    handlePlaySingleSound(translationHe?.formalTts || translationHe?.formal || '', HEBREW_LANGUAGE);
                   }}
                   isPlaySoundDisabled={!translationHe?.formal}
-                  isSpeaking={isSpeaking && speakingText === translationHe?.formal && speakingLanguage === HEBREW_LANGUAGE}
+                  isSpeaking={isSpeaking && (speakingText === translationHe?.formal || speakingText === translationHe?.formalTts) && speakingLanguage === HEBREW_LANGUAGE}
                 />
 
                 <TranslationCard
@@ -251,10 +251,10 @@ export function HomeScreen(): React.JSX.Element {
                   isCopied={copiedKey === TranslationCopyKey.HebrewCasual}
                   isCopyDisabled={!translationHe?.casual}
                   onPlaySound={() => {
-                    handlePlaySingleSound(translationHe?.casual ?? '', HEBREW_LANGUAGE);
+                    handlePlaySingleSound(translationHe?.casualTts || translationHe?.casual || '', HEBREW_LANGUAGE);
                   }}
                   isPlaySoundDisabled={!translationHe?.casual}
-                  isSpeaking={isSpeaking && speakingText === translationHe?.casual && speakingLanguage === HEBREW_LANGUAGE}
+                  isSpeaking={isSpeaking && (speakingText === translationHe?.casual || speakingText === translationHe?.casualTts) && speakingLanguage === HEBREW_LANGUAGE}
                 />
               </>
             ) : null}
@@ -272,10 +272,10 @@ export function HomeScreen(): React.JSX.Element {
                   isCopied={copiedKey === TranslationCopyKey.RussianFormal}
                   isCopyDisabled={!translationRu?.formal}
                   onPlaySound={() => {
-                    handlePlaySingleSound(translationRu?.formal ?? '', RUSSIAN_LANGUAGE);
+                    handlePlaySingleSound(translationRu?.formalTts || translationRu?.formal || '', RUSSIAN_LANGUAGE);
                   }}
                   isPlaySoundDisabled={!translationRu?.formal}
-                  isSpeaking={isSpeaking && speakingText === translationRu?.formal && speakingLanguage === RUSSIAN_LANGUAGE}
+                  isSpeaking={isSpeaking && (speakingText === translationRu?.formal || speakingText === translationRu?.formalTts) && speakingLanguage === RUSSIAN_LANGUAGE}
                 />
 
                 <TranslationCard
@@ -289,10 +289,10 @@ export function HomeScreen(): React.JSX.Element {
                   isCopied={copiedKey === TranslationCopyKey.RussianCasual}
                   isCopyDisabled={!translationRu?.casual}
                   onPlaySound={() => {
-                    handlePlaySingleSound(translationRu?.casual ?? '', RUSSIAN_LANGUAGE);
+                    handlePlaySingleSound(translationRu?.casualTts || translationRu?.casual || '', RUSSIAN_LANGUAGE);
                   }}
                   isPlaySoundDisabled={!translationRu?.casual}
-                  isSpeaking={isSpeaking && speakingText === translationRu?.casual && speakingLanguage === RUSSIAN_LANGUAGE}
+                  isSpeaking={isSpeaking && (speakingText === translationRu?.casual || speakingText === translationRu?.casualTts) && speakingLanguage === RUSSIAN_LANGUAGE}
                 />
               </>
             ) : null}

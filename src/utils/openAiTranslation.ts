@@ -3,6 +3,8 @@ import { TranslationMode } from './translationModes';
 export type TranslationVariant = {
   formal: string;
   casual: string;
+  formalTts?: string;
+  casualTts?: string;
 };
 
 export type OpenAiTranslationResult = {
@@ -67,6 +69,7 @@ function buildInstructions(mode: TranslationMode): string {
         'Do not return the same sentence twice.',
         'Preserve the original meaning and emotional tone as closely as possible.',
         'Use natural modern Hebrew.',
+        'For Hebrew, also provide formalTts and casualTts which are the same as formal and casual but WITH HEBREW VOWELS (nikkud) for better text-to-speech quality.',
         'Do not add explanations.',
       ].join(' ');
 
@@ -81,6 +84,7 @@ function buildInstructions(mode: TranslationMode): string {
         'The formal and casual Russian variants must be clearly different in wording and register.',
         'Do not return the same sentence twice.',
         'Preserve the original meaning and emotional tone as closely as possible.',
+        'For Russian, also provide formalTts and casualTts which are the same as formal and casual but WITH STRESS MARKS (using the \u0301 combining acute accent) on the stressed vowels to improve text-to-speech quality.',
         'Do not add explanations.',
       ].join(' ');
 
@@ -95,6 +99,7 @@ function buildInstructions(mode: TranslationMode): string {
         'The formal and casual Russian variants must be clearly different in wording and register.',
         'Do not return the same sentence twice.',
         'Preserve the original meaning and emotional tone as closely as possible.',
+        'For Russian, also provide formalTts and casualTts which are the same as formal and casual but WITH STRESS MARKS (using the \u0301 combining acute accent) on the stressed vowels to improve text-to-speech quality.',
         'Do not add explanations.',
       ].join(' ');
 
@@ -110,25 +115,43 @@ function buildInstructions(mode: TranslationMode): string {
         'Do not return the same sentence twice within the same language.',
         'Preserve the original meaning and emotional tone as closely as possible.',
         'Use natural modern Hebrew for Hebrew outputs.',
+        'For Hebrew, provide formalTts and casualTts WITH HEBREW VOWELS (nikkud).',
+        'For Russian (if applicable), use STRESS MARKS in TTS fields.',
         'Do not add explanations.',
       ].join(' ');
   }
 }
 
-function createVariantSchema(descriptionPrefix: string): JsonSchema {
+function createVariantSchema(descriptionPrefix: string, includeTts: boolean = false): JsonSchema {
+  const properties: Record<string, unknown> = {
+    formal: {
+      type: 'string',
+      description: `${descriptionPrefix} formal translation. Standard, grammatically correct, no slang.`,
+    },
+    casual: {
+      type: 'string',
+      description: `${descriptionPrefix} casual translation. Natural spoken style, clearly different from the formal variant.`,
+    },
+  };
+
+  const required = ['formal', 'casual'];
+
+  if (includeTts) {
+    properties.formalTts = {
+      type: 'string',
+      description: `${descriptionPrefix} formal translation with vowels/stress marks for TTS.`,
+    };
+    properties.casualTts = {
+      type: 'string',
+      description: `${descriptionPrefix} casual translation with vowels/stress marks for TTS.`,
+    };
+    required.push('formalTts', 'casualTts');
+  }
+
   return {
     type: 'object',
-    properties: {
-      formal: {
-        type: 'string',
-        description: `${descriptionPrefix} formal translation. Standard, grammatically correct, no slang.`,
-      },
-      casual: {
-        type: 'string',
-        description: `${descriptionPrefix} casual translation. Natural spoken style, clearly different from the formal variant.`,
-      },
-    },
-    required: ['formal', 'casual'],
+    properties,
+    required,
     additionalProperties: false,
   };
 }
@@ -157,7 +180,7 @@ function getSchemaForMode(mode: TranslationMode): JsonSchema {
             type: 'string',
             description: 'Original Russian text exactly as provided by the user.',
           },
-          translationHe: createVariantSchema('Hebrew'),
+          translationHe: createVariantSchema('Hebrew', true),
         },
         required: ['source', 'translationHe'],
         additionalProperties: false,
@@ -171,7 +194,7 @@ function getSchemaForMode(mode: TranslationMode): JsonSchema {
             type: 'string',
             description: 'Original English text exactly as provided by the user.',
           },
-          translationRu: createVariantSchema('Russian'),
+          translationRu: createVariantSchema('Russian', true),
         },
         required: ['source', 'translationRu'],
         additionalProperties: false,
@@ -185,7 +208,7 @@ function getSchemaForMode(mode: TranslationMode): JsonSchema {
             type: 'string',
             description: 'Original Hebrew text exactly as provided by the user.',
           },
-          translationRu: createVariantSchema('Russian'),
+          translationRu: createVariantSchema('Russian', true),
         },
         required: ['source', 'translationRu'],
         additionalProperties: false,
@@ -200,7 +223,7 @@ function getSchemaForMode(mode: TranslationMode): JsonSchema {
             description: 'Original Russian text exactly as provided by the user.',
           },
           translationEn: createVariantSchema('English'),
-          translationHe: createVariantSchema('Hebrew'),
+          translationHe: createVariantSchema('Hebrew', true),
         },
         required: ['source', 'translationEn', 'translationHe'],
         additionalProperties: false,
@@ -231,14 +254,18 @@ function normalizeVariant(value: unknown): TranslationVariant | undefined {
   const variant = value as Partial<TranslationVariant>;
   const formal = normalizeString(variant.formal);
   const casual = normalizeString(variant.casual);
+  const formalTts = normalizeString(variant.formalTts);
+  const casualTts = normalizeString(variant.casualTts);
 
   if (!formal && !casual) {
     return undefined;
   }
 
   return {
-    formal,
-    casual,
+    formal: formal || '',
+    casual: casual || '',
+    formalTts,
+    casualTts,
   };
 }
 

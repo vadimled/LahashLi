@@ -52,26 +52,26 @@ export function buildSpeechQueue({
 
   switch (selectedMode) {
     case TranslationMode.RuToEn:
-      pushChunk(chunks, translationEn?.formal, ENGLISH_LANGUAGE);
-      pushChunk(chunks, translationEn?.casual, ENGLISH_LANGUAGE);
+      pushChunk(chunks, translationEn?.formalTts || translationEn?.formal, ENGLISH_LANGUAGE);
+      pushChunk(chunks, translationEn?.casualTts || translationEn?.casual, ENGLISH_LANGUAGE);
       break;
 
     case TranslationMode.RuToHe:
-      pushChunk(chunks, translationHe?.formal, HEBREW_LANGUAGE);
-      pushChunk(chunks, translationHe?.casual, HEBREW_LANGUAGE);
+      pushChunk(chunks, translationHe?.formalTts || translationHe?.formal, HEBREW_LANGUAGE);
+      pushChunk(chunks, translationHe?.casualTts || translationHe?.casual, HEBREW_LANGUAGE);
       break;
 
     case TranslationMode.RuToEnHe:
-      pushChunk(chunks, translationEn?.formal, ENGLISH_LANGUAGE);
-      pushChunk(chunks, translationEn?.casual, ENGLISH_LANGUAGE);
-      pushChunk(chunks, translationHe?.formal, HEBREW_LANGUAGE);
-      pushChunk(chunks, translationHe?.casual, HEBREW_LANGUAGE);
+      pushChunk(chunks, translationEn?.formalTts || translationEn?.formal, ENGLISH_LANGUAGE);
+      pushChunk(chunks, translationEn?.casualTts || translationEn?.casual, ENGLISH_LANGUAGE);
+      pushChunk(chunks, translationHe?.formalTts || translationHe?.formal, HEBREW_LANGUAGE);
+      pushChunk(chunks, translationHe?.casualTts || translationHe?.casual, HEBREW_LANGUAGE);
       break;
 
     case TranslationMode.EnToRu:
     case TranslationMode.HeToRu:
-      pushChunk(chunks, translationRu?.formal, RUSSIAN_LANGUAGE);
-      pushChunk(chunks, translationRu?.casual, RUSSIAN_LANGUAGE);
+      pushChunk(chunks, translationRu?.formalTts || translationRu?.formal, RUSSIAN_LANGUAGE);
+      pushChunk(chunks, translationRu?.casualTts || translationRu?.casual, RUSSIAN_LANGUAGE);
       break;
   }
 
