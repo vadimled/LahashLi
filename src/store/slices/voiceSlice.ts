@@ -24,8 +24,14 @@ const initialState: VoiceState = {
 export const translateTranscript = createAsyncThunk(
   'voice/translate',
   async (
-    { transcript, mode }: { transcript: string; mode: TranslationMode },
-    { rejectWithValue }
+    {
+      transcript,
+      mode,
+    }: {
+      transcript: string;
+      mode: TranslationMode;
+    },
+    { rejectWithValue },
   ) => {
     if (!openAiConfig.apiKey.trim()) {
       return rejectWithValue(texts.home.recordButton.error.missingOpenAiApiKey);
@@ -34,14 +40,18 @@ export const translateTranscript = createAsyncThunk(
     try {
       return await translateWithOpenAi({
         text: transcript,
-        mode: mode,
+        mode,
         apiKey: openAiConfig.apiKey,
         model: openAiConfig.model,
       });
-    } catch {
-      return rejectWithValue(texts.home.recordButton.error.translationFailed);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      console.error('OpenAI translation failed:', message);
+
+      return rejectWithValue(__DEV__ ? message : texts.home.recordButton.error.translationFailed);
     }
-  }
+  },
 );
 
 const voiceSlice = createSlice({
@@ -51,10 +61,12 @@ const voiceSlice = createSlice({
     setStatus(state, action: PayloadAction<RecordButtonStatus>) {
       state.status = action.payload;
     },
+
     setLiveTranscript(state, action: PayloadAction<string>) {
       state.liveTranscript = action.payload;
       state.inputSource = 'voice';
     },
+
     setTranslationResult(
       state,
       action: PayloadAction<{
@@ -63,9 +75,10 @@ const voiceSlice = createSlice({
         translationHe?: TranslationVariant;
         translationRu?: TranslationVariant;
         errorMessage?: string;
-      }>
+      }>,
     ) {
       const { transcript, translationEn, translationHe, translationRu, errorMessage } = action.payload;
+
       state.status = 'idle';
       state.transcript = transcript;
       state.translationEn = translationEn;
@@ -73,17 +86,21 @@ const voiceSlice = createSlice({
       state.translationRu = translationRu;
       state.errorMessage = errorMessage;
       state.liveTranscript = undefined;
+
       if (transcript) {
         state.inputSource = 'voice';
       }
     },
-    setErrorMessage(state, action: PayloadAction<string | undefined>) {
+
+    setErrorMessage(state, action: PayloadAction<string>) {
       state.errorMessage = action.payload;
     },
+
     setTranscript(state, action: PayloadAction<string>) {
       state.transcript = action.payload;
       state.inputSource = 'clipboard';
     },
+
     resetVoiceState(state) {
       state.status = 'idle';
       state.inputSource = undefined;
@@ -95,9 +112,9 @@ const voiceSlice = createSlice({
       state.errorMessage = undefined;
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     builder
-      .addCase(translateTranscript.pending, (state) => {
+      .addCase(translateTranscript.pending, state => {
         state.status = 'processing';
       })
       .addCase(translateTranscript.fulfilled, (state, action) => {
@@ -117,13 +134,6 @@ const voiceSlice = createSlice({
   },
 });
 
-export const {
-  setStatus,
-  setLiveTranscript,
-  setTranslationResult,
-  setErrorMessage,
-  setTranscript,
-  resetVoiceState,
-} = voiceSlice.actions;
+export const { setStatus, setLiveTranscript, setTranslationResult, setErrorMessage, setTranscript, resetVoiceState } = voiceSlice.actions;
 
 export default voiceSlice.reducer;

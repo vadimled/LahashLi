@@ -302,12 +302,7 @@ function validateResult(result: OpenAiTranslationResult, mode: TranslationMode):
   }
 }
 
-export async function translateWithOpenAi({
-  text,
-  mode,
-  apiKey,
-  model,
-}: TranslateWithOpenAiParams): Promise<OpenAiTranslationResult> {
+export async function translateWithOpenAi({ text, mode, apiKey, model }: TranslateWithOpenAiParams): Promise<OpenAiTranslationResult> {
   const trimmedText = text.trim();
 
   if (!trimmedText) {
@@ -318,48 +313,70 @@ export async function translateWithOpenAi({
     throw new Error('OpenAI API key is empty');
   }
 
+  const isGpt5Family = model.startsWith('gpt-5');
+
+  const requestBody: Record<string, unknown> = {
+    model,
+
+    ...(isGpt5Family
+      ? {
+          reasoning: {
+            effort: 'low',
+          },
+        }
+      : {
+          temperature: 0,
+        }),
+
+    input: [
+      {
+        role: 'developer',
+        content: [
+          {
+            type: 'input_text',
+            text: buildInstructions(mode),
+          },
+        ],
+      },
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'input_text',
+            text: trimmedText,
+          },
+        ],
+      },
+    ],
+
+    text: {
+      ...(isGpt5Family
+        ? {
+            verbosity: 'low',
+          }
+        : {}),
+
+      format: {
+        type: 'json_schema',
+        name: 'translation_result',
+        strict: true,
+        schema: getSchemaForMode(mode),
+      },
+    },
+  };
+
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model,
-      temperature: 0,
-      input: [
-        {
-          role: 'developer',
-          content: [
-            {
-              type: 'input_text',
-              text: buildInstructions(mode),
-            },
-          ],
-        },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'input_text',
-              text: trimmedText,
-            },
-          ],
-        },
-      ],
-      text: {
-        format: {
-          type: 'json_schema',
-          name: 'translation_result',
-          strict: true,
-          schema: getSchemaForMode(mode),
-        },
-      },
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
+
     throw new Error(`OpenAI request failed with status ${response.status}: ${errorText}`);
   }
 
@@ -376,6 +393,7 @@ export async function translateWithOpenAi({
     result = parseTranslationResult(rawText, trimmedText);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown JSON parse error';
+
     throw new Error(`Failed to parse OpenAI JSON response: ${message}. Raw output: ${rawText}`);
   }
 
