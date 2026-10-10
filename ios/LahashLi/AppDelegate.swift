@@ -6,6 +6,7 @@ import ReactAppDependencyProvider
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
   var window: UIWindow?
+  var launchOptions: [UIApplication.LaunchOptionsKey: Any]?
 
   var reactNativeDelegate: ReactNativeDelegate?
   var reactNativeFactory: RCTReactNativeFactory?
@@ -20,6 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     reactNativeDelegate = delegate
     reactNativeFactory = factory
+    self.launchOptions = launchOptions
 
     window = UIWindow(frame: UIScreen.main.bounds)
 
@@ -64,7 +66,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     factory.startReactNative(
       withModuleName: "LahashLi",
       in: window,
-      launchOptions: nil
+      launchOptions: appDelegate.launchOptions
     )
   }
 }
