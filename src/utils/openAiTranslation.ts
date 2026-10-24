@@ -317,7 +317,7 @@ export async function translateWithOpenAi({ text, mode, apiKey, model }: Transla
     model,
 
     reasoning: {
-      effort: 'none',
+      effort: 'low',
     },
 
     input: [
