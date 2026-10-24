@@ -313,20 +313,12 @@ export async function translateWithOpenAi({ text, mode, apiKey, model }: Transla
     throw new Error('OpenAI API key is empty');
   }
 
-  const isGpt5Family = model.startsWith('gpt-5');
-
   const requestBody: Record<string, unknown> = {
     model,
 
-    ...(isGpt5Family
-      ? {
-          reasoning: {
-            effort: 'low',
-          },
-        }
-      : {
-          temperature: 0,
-        }),
+    reasoning: {
+      effort: 'low',
+    },
 
     input: [
       {
@@ -350,11 +342,7 @@ export async function translateWithOpenAi({ text, mode, apiKey, model }: Transla
     ],
 
     text: {
-      ...(isGpt5Family
-        ? {
-            verbosity: 'low',
-          }
-        : {}),
+      verbosity: 'low',
 
       format: {
         type: 'json_schema',
